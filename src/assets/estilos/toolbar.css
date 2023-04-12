@@ -1,0 +1,18 @@
+.toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    background-color: var(--true-bg-general);
+    color: var(--true-color-general);
+    font-weight: 600;
+    align-items: center;
+    justify-content: center;
+
+}
+.toolbar img {
+    margin: 0 16px;
+    cursor: pointer;
+}

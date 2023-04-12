@@ -1,0 +1,171 @@
+<!-- SUBTITULO -->
+<h2>{{extraTitulo}}</h2>
+
+<!-- FORMULARIO -->
+<form [formGroup]="crud1Form">
+    
+    <mat-grid-list cols="1" rowHeight="90px">
+
+      <!-- ENCABEZADO Y BOTONES -->
+      <mat-grid-tile>
+          <div class="submenuCRUD">
+              <div>
+                  <button mat-button (click)="back()" style="color: gray;"><mat-icon>arrow_back</mat-icon> Volver</button>
+              </div>
+              <div class="spacer"></div>
+              <div>
+                  <button color="primary" mat-raised-button (click)="save()" [disabled]="!crud1Form.valid" title="Grabar los cambios"><mat-icon>save_outline</mat-icon> Grabar</button>
+                  <button color="accent" mat-raised-button (click)="reset()" title="Descartar los cambios y recargar el registro"><mat-icon>refresh</mat-icon> Descartar</button>
+                  <button color="warn" mat-raised-button (click)="delete()" *ngIf="!nuevo" title="Eliminar este registro"><mat-icon>delete_outline</mat-icon> Eliminar</button>
+              </div>
+          </div>
+      </mat-grid-tile>
+
+      <div *ngFor="let field of campos; index as f">
+        <mat-grid-tile *ngIf="field.visible" class="form-row">
+        
+          <mat-form-field appearance="outline">
+
+              <mat-label>{{field.etiqueta}}</mat-label>
+
+              <!-- INPUT (texto) -->
+              <input *ngIf="field.campo != 'tabla'" type="textbox" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
+
+              <!-- LISTA DE TABLAS DE LA BBDD -->
+              <div *ngIf="field.campo == 'tabla'">
+                <input type="textbox" formControlName="{{field.campo}}" matInput (keyup)="onKey($event)" [matAutocomplete]="auto" (change)="pErrores = []; showDiferencias = false;">
+                <mat-autocomplete #auto="matAutocomplete">
+                  <mat-option *ngFor="let tbl of opc_tablasBBDD" [value]="tbl.table_name">
+                      {{tbl.table_name}}
+                  </mat-option>
+                </mat-autocomplete>
+            </div>
+
+              <mat-error *ngIf="crud1Form.controls[field.campo].hasError('required')">Este dato es obligatorio!</mat-error>
+              <mat-error *ngIf="crud1Form.controls[field.campo].hasError('maxlength')">Este dato no puede exceder de {{field.ancho}} caracteres!</mat-error>
+              <mat-error *ngIf="crud1Form.controls[field.campo].hasError('email')">El correo electrónico no tiene un formato correcto!</mat-error>
+
+          </mat-form-field>
+
+        </mat-grid-tile>
+      </div>
+
+  </mat-grid-list>
+
+    <!-- TABLA DE DATOS -->
+    <div class="submenuCRUD">
+      <div>
+      </div>
+      <div class="spacer"></div>
+      <div>
+        <!-- VER DIFERENCIAS -->
+        <button *ngIf="pErrores.length > 0" mat-raised-button color="accent" (click)="showDiferencias = !showDiferencias">
+          <mat-icon *ngIf="!showDiferencias">visibility</mat-icon>
+          <mat-icon *ngIf="showDiferencias">visibility_off</mat-icon> Ver diferencias
+        </button>
+        <!-- TOOLS -->
+        <button color="primary" *ngIf="tools == true" mat-raised-button [matMenuTriggerFor]="toolsMenu" [disabled]="crud1Form.controls['tabla'] && !crud1Form.controls['tabla'].valid" aria-label="Herramientas ...">
+          <mat-icon>auto_awesome</mat-icon> Herramientas
+        </button>
+        <!-- AGREGAR CAMPO -->
+        <button color="primary" mat-raised-button (click)="goValor('')" [disabled]="!crud1Form.valid"><mat-icon>add</mat-icon> {{label_agregar}}</button>
+      </div>
+    </div>
+    <!-- LISTA DE LAS DIFERENCIAS -->
+    <div *ngIf="showDiferencias == true">
+
+      <div class="tableFixHead table-responsive tablas-crud">
+        <table class="table">
+            <thead class="tablas-crud-header">
+                <th>Tipo</th>
+                <th>Descripci&oacute;n</th>
+                <th colspan="2">Acci&oacute;n</th>
+            </thead>
+            <tbody>
+                <tr *ngFor="let err of pErrores; index as e">
+                    <td class="tablas-crud-col">{{err.categoria}}
+                      <mat-icon *ngIf="err.categoria == 'ERR' && err.resuelto == false" class="inline-icon" color="warn">warning</mat-icon>
+                      <mat-icon *ngIf="err.resuelto == true" class="inline-icon" style="color: green;">check_circle_outline</mat-icon>
+                    </td>
+                    <td class="tablas-crud-col">{{err.texto}}</td>
+                    <td class="tablas-crud-col">{{err.accionTxt}}</td>
+                    <td>
+                      <!-- ACCION MANUAL -->
+                      <mat-icon *ngIf="err.manual" class="inline-icon" color="warn" title="Se requiere una acción manual">pan_tool</mat-icon>
+
+                      <!-- LA TABLA NO EXISTE -->
+                      <mat-icon *ngIf="err.accionSQL == 'CREATE TABLE'" class="inline-icon" style="color: green" title="Crear la tabla según la definición" (click)="createtable(err.id)">settings_suggest</mat-icon>
+
+                      <!-- EL CAMPO NO ESTA EN LA DEFINICION -->
+                      <mat-icon *ngIf="err.add2def" class="inline-icon" style="color: green" title="Añadir el campo a la definición" (click)="add2definicion(err.id)">auto_fix_high</mat-icon>
+                      <mat-icon *ngIf="err.add2def" class="inline-icon" style="color: red" title="Eliminar el campo de la base de datos" (click)="del2tabla(err.id)">delete_outline</mat-icon>
+
+                      <!-- EL CAMPO NO ESTA EN LA TABLA -->
+                      <mat-icon *ngIf="err.add2table" class="inline-icon" style="color: green" title="Crear el campo en la tabla" (click)="add2table(err.id)">post_add</mat-icon>
+                      <mat-icon *ngIf="err.add2table" class="inline-icon" style="color: red" title="Eliminar el campo de la definición" (click)="del2definicion(err.id)">delete_outline</mat-icon>
+
+                      
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  <!-- DATOS DE LOS CAMPOS -->
+  <div *ngIf="!hayDatos">
+    <p style="margin-top: 10px;">No hay valores a mostrar!</p>
+  </div>
+
+  <div class="tableFixHead table-responsive tablas-crud">
+      <table class="table">
+          <thead class="tablas-crud-header">
+              <th *ngFor="let titulo of colTitulos; index as c">
+                  {{titulo.literal}}
+              </th>
+              <th *ngIf="borrar || editar" style="text-align: center;">Acciones</th>
+          </thead>
+          <tbody>
+              <tr *ngFor="let reg of registros; index as i">
+                  <td *ngFor="let field of colTitulos; index as f" class="tablas-crud-col">{{reg[field.campo]}}</td>
+                  <td *ngIf="editar" style="text-align: center;">
+                    <span *ngIf="editar"><mat-icon class="action-icon" color="primary" (click)="goValor(reg.id)" title="Editar este registro">edit_outline</mat-icon></span>
+                    <span *ngIf="borrar"><mat-icon class="action-icon" color="warn" (click)="deleteValor(reg.id)" title="Editar este registro">delete_outline</mat-icon></span>
+                </td>
+              </tr>
+          </tbody>
+      </table>
+
+      <mat-paginator #paginator
+          [length]="length"
+          (page)="handlePageEvent($event)"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 25, 100]"
+          [showFirstLastButtons]="showFirstLastButtons"
+          [pageSizeOptions]="showPageSizeOptions ? pageSizeOptions : []"
+          aria-label="Select page">
+      </mat-paginator>
+
+  </div>
+
+  <mat-menu #toolsMenu="matMenu">
+
+    <button mat-menu-item [disabled]="!crud1Form.controls['tabla'] || !crud1Form.controls['tabla'].valid" (click)="goCompararEstructura()">
+      <span>Comparar definici&oacute;n con BBDD</span>
+    </button>
+
+    <button mat-menu-item [disabled]="!crud1Form.controls['tabla'] || !crud1Form.controls['tabla'].valid" (click)="goRecuperarDefinicion()">
+      <span>Recuperar una definici&oacute;n desde BBDD</span>
+    </button>
+  
+
+  </mat-menu>
+
+
+  
+</form>
+
+
+
+

@@ -1,0 +1,74 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 8px 0;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 400;
+}
+h2 {
+  font-size: 18px;
+  font-weight: 100;
+}
+
+.mat-typography h1 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+.pva {
+  margin: 0;
+  position: relative;
+  transform: translateY(30%);
+  background-color: transparent !important;
+}
+
+a,
+a:visited,
+a:hover {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #125699;
+}
+
+.link {
+  cursor: pointer;
+}
+.italica {
+  font-style: italic;
+}
+.colorBlue {
+  color: blue;
+}
+.colorWhite {
+  color: white;
+}
+
+mat-expansion-panel {
+  width: 80% !important;
+  max-width: 460px;
+}
+mat-expansion-panel textarea {
+  align-content: center;
+  border: none;
+  width: 90%;
+  height: 300px;
+  text-align: justify; 
+}
+
+mat-form-field {
+  width: 80%;
+  max-width: 460px;
+}
+

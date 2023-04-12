@@ -1,0 +1,22 @@
+.message-icon {
+    vertical-align: middle;
+    text-align: center;
+    margin-left: 25px;
+    margin-right: 10px;
+    float: center;
+    
+}
+
+.inline-icon {
+    vertical-align:middle;
+    font-size: 18px !important;
+}
+
+.button-icon {
+    cursor: pointer;
+}
+
+.action-icon {
+    margin-left: 20px;
+    cursor: pointer;
+}

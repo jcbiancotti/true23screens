@@ -1,0 +1,14 @@
+:root {
+    --true-color-texto: black;
+    --true-bg-general: #2c3e50;
+    --true-tabla-head-bg: rgb(207, 216, 220);
+    --true-tabla-head-txt: black;
+    --true-bg-desktop: white;
+    --true-bg-submenu: white;
+    --true-bg-menuitem: rgb(30, 197, 209);
+    --true-color-submenu: white;    
+    --true-color-general: white;
+    --true-border-card: grey;
+    
+
+}

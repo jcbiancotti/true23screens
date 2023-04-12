@@ -1,0 +1,24 @@
+.alertas {
+    display: flex;
+    vertical-align: middle;
+    justify-content: center;
+    align-items: center;
+
+    margin-right: auto !important;
+    height: 55px;
+    background-color: transparent !important;
+    
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 25px;
+    z-index: 995;
+}
+
+.noActiva {
+    color: var(--true-color-general) !important;
+}
+.siActiva {
+    color: red !important;
+}
+

@@ -1,0 +1,204 @@
+<mat-sidenav-container id="sidenavContainer" autosize>
+
+  <!-- CONTENIDO DEL MENU LATERAL -->
+  <mat-sidenav #sidenav mode="side" [class.mat-elevation-z4]="true" class="app-sidenav" [opened]="open">
+
+    <!-- INICIO / HOME -->
+    <mat-nav-list dense>
+
+    <span *ngFor="let opcion0 of opciones; index as i">
+
+      <mat-list-item *ngIf="opcion0" class="menuItem" (click)="go(opcion0)"><span class="menuItem conhijos"><mat-icon class="inline-icon">home</mat-icon>{{opcion0.name}}</span></mat-list-item>          
+
+      <!-- LEVEL 1 -->
+      <span *ngFor="let opcion1 of opcion0.children; index as i">
+        <!-- LEVEL 1 sin hijos -->
+        <span *ngIf="opcion1.children.length == 0">
+          <mat-list-item class="menuItem" (click)="go(opcion1)"><span class="menuItem sinhijos">{{opcion1.name}}</span></mat-list-item>          
+        </span>
+        <!-- LEVEL 1 con hijos -->
+        <span *ngIf="opcion1.padre == opcion0.id && opcion1.children.length != 0">
+
+          <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+            <!-- El texto de la opción padre -->
+            <mat-expansion-panel-header>
+              <span class="conhijos">{{opcion1.name}}</span>
+            </mat-expansion-panel-header>
+
+            <!-- Los hijos del nivel 1 -->
+            <!-- LEVEL 2 -->
+            <span *ngFor="let opcion2 of opcion1.children; index as i">
+              <!-- LEVEL 2 sin hijos -->
+              <span *ngIf="opcion2.children.length == 0">
+                <mat-list-item class="menuItem" (click)="go(opcion2)"><span class="menuItem sinhijos">{{opcion2.name}}</span></mat-list-item>          
+              </span>
+              <!-- LEVEL 2 con hijos -->
+              <span *ngIf="opcion2.padre == opcion1.id && opcion2.children.length != 0">
+
+                <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                  <!-- El texto de la opción padre -->
+                  <mat-expansion-panel-header>
+                    <span class="conhijos">{{opcion2.name}}</span>
+                  </mat-expansion-panel-header>
+                  <!-- Los hijos del nivel 2 -->
+                  <!-- LEVEL 3 -->
+                  <span *ngFor="let opcion3 of opcion2.children; index as i">
+                    <!-- LEVEL 3 sin hijos -->
+                    <span *ngIf="opcion3.children.length == 0">
+                      <mat-list-item class="menuItem" (click)="go(opcion3)"><span class="menuItem sinhijos">{{opcion3.name}}</span></mat-list-item>          
+                    </span>
+                    <!-- LEVEL 3 con hijos -->
+                    <span *ngIf="opcion3.padre == opcion2.id && opcion3.children.length != 0">
+
+                      <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                        <!-- El texto de la opción padre -->
+                        <mat-expansion-panel-header>
+                          <span class="conhijos">{{opcion3.name}}</span>
+                        </mat-expansion-panel-header>
+                        <!-- Los hijos del nivel 3 -->
+                        <!-- LEVEL 4 -->
+                        <span *ngFor="let opcion4 of opcion3.children; index as i">
+                          <!-- LEVEL 4 sin hijos -->
+                          <span *ngIf="opcion4.children.length == 0">
+                            <mat-list-item class="menuItem" (click)="go(opcion4)"><span class="menuItem sinhijos">{{opcion4.name}}</span></mat-list-item>          
+                          </span>
+                          <!-- LEVEL 4 con hijos -->
+                          <span *ngIf="opcion4.padre == opcion3.id && opcion4.children.length != 0">
+
+                            <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                              <!-- El texto de la opción padre -->
+                              <mat-expansion-panel-header>
+                                <span class="conhijos">{{opcion4.name}}</span>
+                              </mat-expansion-panel-header>
+                              <!-- Los hijos del nivel 4 -->
+                              <!-- LEVEL 5 -->
+                              <span *ngFor="let opcion5 of opcion4.children; index as i">
+                                <!-- LEVEL 5 sin hijos -->
+                                <span *ngIf="opcion5.children.length == 0">
+                                  <mat-list-item class="menuItem" (click)="go(opcion5)"><span class="menuItem sinhijos">{{opcion5.name}}</span></mat-list-item>          
+                                </span>
+                                <!-- LEVEL 5 con hijos -->
+                                <span *ngIf="opcion5.padre == opcion4.id && opcion5.children.length != 0">
+
+                                  <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                                    <!-- El texto de la opción padre -->
+                                    <mat-expansion-panel-header>
+                                      <span class="conhijos">{{opcion5.name}}</span>
+                                    </mat-expansion-panel-header>
+                                    <!-- Los hijos del nivel 5 -->
+                                    <!-- LEVEL 6 -->
+                                    <span *ngFor="let opcion6 of opcion5.children; index as i">
+                                      <!-- LEVEL 6 sin hijos -->
+                                      <span *ngIf="opcion6.children.length == 0">
+                                        <mat-list-item class="menuItem" (click)="go(opcion6)"><span class="menuItem sinhijos">{{opcion6.name}}</span></mat-list-item>          
+                                      </span>
+                                      <!-- LEVEL 6 con hijos -->
+                                      <span *ngIf="opcion6.padre == opcion5.id && opcion6.children.length != 0">
+
+                                        <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                                          <!-- El texto de la opción padre -->
+                                          <mat-expansion-panel-header>
+                                            <span class="conhijos">{{opcion6.name}}</span>
+                                          </mat-expansion-panel-header>
+                                          <!-- Los hijos del nivel 6 -->
+                                          <!-- LEVEL 7 -->
+                                          <span *ngFor="let opcion7 of opcion6.children; index as i">
+                                            <!-- LEVEL 7 sin hijos -->
+                                            <span *ngIf="opcion7.children.length == 0">
+                                              <mat-list-item class="menuItem" (click)="go(opcion7)"><span class="menuItem sinhijos">{{opcion7.name}}</span></mat-list-item>          
+                                            </span>
+                                            <!-- LEVEL 7 con hijos -->
+                                            <span *ngIf="opcion7.padre == opcion6.id && opcion7.children.length != 0">
+
+                                              <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                                                <!-- El texto de la opción padre -->
+                                                <mat-expansion-panel-header>
+                                                  <span class="conhijos">{{opcion7.name}}</span>
+                                                </mat-expansion-panel-header>
+                                                <!-- Los hijos del nivel 7 -->
+                                                <!-- LEVEL 8 -->
+                                                <span *ngFor="let opcion8 of opcion7.children; index as i">
+                                                  <!-- LEVEL 8 sin hijos -->
+                                                  <span *ngIf="opcion8.children.length == 0">
+                                                    <mat-list-item class="menuItem" (click)="go(opcion8)"><span class="menuItem sinhijos">{{opcion8.name}}</span></mat-list-item>          
+                                                  </span>
+                                                  <!-- LEVEL 8 con hijos -->
+                                                  <span *ngIf="opcion8.padre == opcion7.id && opcion8.children.length != 0">
+
+                                                    <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                                                      <!-- El texto de la opción padre -->
+                                                      <mat-expansion-panel-header>
+                                                        <span class="conhijos">{{opcion8.name}}</span>
+                                                      </mat-expansion-panel-header>
+                                                      <!-- Los hijos del nivel 8 -->
+                                                      <!-- LEVEL 9 -->
+                                                      <span *ngFor="let opcion9 of opcion8.children; index as i">
+                                                        <!-- LEVEL 9 sin hijos -->
+                                                        <span *ngIf="opcion9.children.length == 0">
+                                                          <mat-list-item class="menuItem" (click)="go(opcion9)"><span class="menuItem sinhijos">{{opcion9.name}}</span></mat-list-item>          
+                                                        </span>
+                                                        <!-- LEVEL 9 con hijos -->
+                                                        <span *ngIf="opcion9.padre == opcion8.id && opcion9.children.length != 0">
+
+                                                          <mat-expansion-panel [class.mat-elevation-z0]="true" dense>
+                                                            <!-- El texto de la opción padre -->
+                                                            <mat-expansion-panel-header>
+                                                              <span class="conhijos">{{opcion9.name}}</span>
+                                                            </mat-expansion-panel-header>
+                                                            <!-- Los hijos del nivel 9 -->
+                                                            <!-- LEVEL 10 -->
+                                                            <span *ngFor="let opcion10 of opcion9.children; index as i">
+                                                              <!-- LEVEL 10 Todos sin hijos -->
+                                                              <span>
+                                                                <mat-list-item class="menuItem" (click)="go(opcion10)"><span class="menuItem sinhijos">{{opcion10.name}}</span></mat-list-item>          
+                                                              </span>
+
+                                                            </span>
+                                                            </mat-expansion-panel>
+                                                          </span>
+                                                      </span>
+                                                      </mat-expansion-panel>
+                                                  </span>
+                                                </span>
+                                                </mat-expansion-panel>
+                                            </span>
+                                          </span>
+                                          </mat-expansion-panel>
+                                      </span>
+                                    </span>
+                                    </mat-expansion-panel>
+                                </span>
+                              </span>
+                              </mat-expansion-panel>
+                          </span>
+                        </span>
+                      </mat-expansion-panel>
+                    </span>
+                  </span>
+                </mat-expansion-panel>
+              </span>
+            </span>
+          </mat-expansion-panel>
+        </span>
+        <!-- END LEVEL 1 -->
+      </span>
+
+    </span>
+
+    </mat-nav-list>
+
+  </mat-sidenav>
+
+  <!-- CONTENIDO PAGINA CENTRAL -->
+  <mat-sidenav-content>
+
+    <mat-icon (click)="changeOpen()" *ngIf="open" class="showHidden">menu_open</mat-icon>
+    <mat-icon (click)="changeOpen()" *ngIf="!open"  class="showHidden" [ngClass]="{'isHidden': !open}" type="button">menu_open</mat-icon>
+
+    <!-- ROUTER-OUTLET LOGGED -->
+    <router-outlet></router-outlet>
+    
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+

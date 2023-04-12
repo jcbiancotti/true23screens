@@ -1,0 +1,34 @@
+<div class="user-card">
+
+  <span *ngIf="isLoggedUsercard == true">
+  
+    <menu-button [matMenuTriggerFor]="userProfile">
+      <img class="img-avatar" src="{{usuario.usrImagen}}" alt="User avatar">
+    </menu-button>
+
+    <menu-button [matMenuTriggerFor]="userProfile" class="d-none d-lg-inline">
+      {{usuario.nombre}}
+      <mat-icon class="inline-icon">arrow_drop_down</mat-icon>          
+    </menu-button>
+
+  </span>
+
+</div>
+
+<mat-menu #userProfile="matMenu">
+
+    <mat-card class="user-card-perfil">
+      <mat-card-title>
+        <div class="avatar-preview">
+          <div id="imagePreview" [style.backgroundImage]="'url('+ usuario.usrImagen +')'"></div>
+        </div>
+      </mat-card-title>
+      <mat-card-content>
+        <p style="font-weight: bold;">{{usuario.nombre}}</p>
+        <p>{{usuario.correo}}</p>
+        <p style="font-weight: bold;">Perfil/roles:</p>
+        <p *ngFor="let rol of usuario.roles">{{rol.descripcion}}</p>
+      </mat-card-content>
+    </mat-card>
+</mat-menu>
+  

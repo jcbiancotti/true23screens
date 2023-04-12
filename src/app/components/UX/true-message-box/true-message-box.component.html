@@ -1,0 +1,26 @@
+<mat-dialog-content style="height: 300px; border: none;overflow: hidden;"> 
+  
+
+  <p style="text-align: start;margin-bottom: 20px;">{{titulo}}</p> 
+  <div style="width: 15%; display: inline-block; vertical-align: middle;">
+
+      <mat-icon *ngIf="categoria=='W'" class="material-icons message-icon" style="color:'orange';transform: scale(2);">warning</mat-icon>
+      <mat-icon *ngIf="categoria=='Q'" class="material-icons message-icon" style="color:var(--true-bg-general);transform: scale(2);">help_outline</mat-icon>
+      <mat-icon *ngIf="categoria=='E'" class="material-icons message-icon" style="color:'red';transform: scale(2);">error</mat-icon>
+      <mat-icon *ngIf="categoria=='O'" class="material-icons message-icon" style="color:'green';transform: scale(2);">check_circle</mat-icon>        
+      <mat-icon *ngIf="categoria=='I'" class="material-icons message-icon" style="color:'blue';transform: scale(2);">info</mat-icon>
+
+  </div>
+  <div style="width:85%; display: inline-block; vertical-align: top; font-weight: 400;">
+      {{mensaje}}
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button *ngIf="btnCancel != ''" color="warning" mat-button [mat-dialog-close]="false">{{btnCancel}}</button>
+  <button *ngIf="btnOk != ''" color="primary" mat-raised-button [mat-dialog-close]="true">{{btnOk}}</button>
+</mat-dialog-actions>
+
+
+

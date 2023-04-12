@@ -1,0 +1,57 @@
+<!-- ENCABEZADO Y BOTONES -->
+<div class="submenuCRUD">
+  <div>
+      <button mat-button color="accent" style="color: grey;" routerLink="/in"><mat-icon>arrow_back</mat-icon> Volver</button>
+  </div>
+  <div class="spacer"></div>
+  <div>
+      <button *ngIf="nuevo" color="primary" mat-raised-button (click)="goCrud1('')"><mat-icon>add</mat-icon> Crear</button>
+      <button *ngIf="listar" color="accent" mat-raised-button (click)="doListado()"><mat-icon>picture_as_pdf</mat-icon> Obtener listado</button>
+  </div>
+</div>
+
+<!-- TABLA DE DATOS -->
+
+<div *ngIf="!hayDatos">
+  <p>No hay datos a mostrar!</p>
+</div>
+
+<div *ngIf="hayDatos">
+
+  <div class="tableFixHead table-responsive tablas-crud">
+      <table class="table">
+          <thead class="tablas-crud-header">
+              <th *ngFor="let titulo of colTitulos; index as c">
+                  {{titulo.literal}}
+                  <span *ngIf="titulo.ordenar && titulo.orden == 'down'" title="Z-A" (click)="setOrden(c)"><mat-icon class="inline-icon">arrow_downward</mat-icon></span>
+                  <span *ngIf="titulo.ordenar && titulo.orden == 'up'" title="A-Z" (click)="setOrden(c)"><mat-icon class="inline-icon">arrow_upward</mat-icon></span>
+                  <span *ngIf="titulo.ordenar && titulo.orden == 'none'" title="No ordenar por esta columna" (click)="setOrden(c)"><mat-icon class="inline-icon">import_export</mat-icon></span>
+              </th>
+              <th *ngIf="borrar || editar" style="text-align: center;">Acciones</th>
+          </thead>
+          <tbody>
+              <tr *ngFor="let reg of registros; index as i">
+                  <td *ngFor="let field of colCampos; index as f" class="tablas-crud-col">{{reg[field.campo]}}</td>
+                  <td *ngIf="borrar || editar" style="text-align: center;">
+                    <span *ngIf="editar"><mat-icon class="action-icon" color="primary" (click)="goCrud1(reg.id)" title="Editar este valor">edit_outline</mat-icon></span>
+                </td>
+              </tr>
+          </tbody>
+      </table>
+
+      <mat-paginator #paginator
+          [length]="length"
+          (page)="handlePageEvent($event)"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 25, 100]"
+          [showFirstLastButtons]="showFirstLastButtons"
+          [pageSizeOptions]="showPageSizeOptions ? pageSizeOptions : []"
+          aria-label="Select page">
+      </mat-paginator>
+      
+  </div>
+
+</div>
+
+
+

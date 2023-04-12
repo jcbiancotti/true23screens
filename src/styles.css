@@ -1,1 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/dist/css/bootstrap.min.css";
+
+@import url("./assets/estilos/variables.css");
+@import url("./assets/estilos/textos.css");
+@import url("./assets/estilos/cards.css");  
+@import url("./assets/estilos/icons.css");
+@import url("./assets/estilos/divs.css");
+@import url("./assets/estilos/toolbar.css");
+@import url("./assets/estilos/imagenes.css");
+@import url("./assets/estilos/sidemenu.css");
+@import url("./assets/estilos/submenu.css");
+@import url("./assets/estilos/buttons.css");
+@import url("./assets/estilos/checkboxs.css");
+@import url("./assets/estilos/spinner.css");
+@import url("./assets/estilos/tablas.css");
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

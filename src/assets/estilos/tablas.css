@@ -1,0 +1,29 @@
+.tablas-crud {
+    display:flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    margin-top: 15px;
+    margin-left: 10px;
+    padding-right: 10px;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+
+}
+
+.tablas-crud-header {
+    background-color: var(--true-tabla-head-bg); 
+    color: var(--true-tabla-head-txt); 
+    height: 40px;
+    width: 100%;
+    vertical-align: middle !important;
+    text-align: start;
+}
+.tablas-crud-header > th {
+    padding-left: 10px !important;
+}
+
+.tablas-crud-col {
+    text-align: start;
+    padding-left: 25px;
+}

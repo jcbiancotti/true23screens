@@ -1,0 +1,18 @@
+<div class="true-page">
+
+  <mat-card-title><h1>Campo de la tabla</h1></mat-card-title>
+
+  <mat-card-content>
+
+      <app-crud2-valores
+          id = "{{id}}"
+          idvalor = "{{idvalor}}"
+          tipo = "T"
+          tabla = "sys_modelo_datos"
+          [crud2Campos] = "crud2Campos"
+          rutaRetorno = "{{rutaRetorno}}"
+      ></app-crud2-valores>
+
+  </mat-card-content>
+
+</div>

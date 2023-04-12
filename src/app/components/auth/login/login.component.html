@@ -1,0 +1,53 @@
+<div class="true-mat-card-cvr">
+
+  <mat-card class="true-mat-card" mat-elevation-z8="true">
+  
+  <mat-card-title><h1>Identif&iacute;cate</h1></mat-card-title>
+
+      <mat-card-content>
+
+          <form [formGroup]="loginForm">
+
+              <mat-grid-list cols="1" rowHeight="90px">
+                  <mat-grid-tile>
+
+                      <mat-form-field appearance="outline">
+                          <mat-label>Correo electr&oacute;nico</mat-label>
+                          <input type="email" #ref_email formControlName="usrCorreo" matInput placeholder="ejemplo@correo.com" (focus)="error=''">
+                          <mat-icon matSuffix>email</mat-icon>
+                          
+                          <mat-error *ngIf="loginForm.controls['usrCorreo'].hasError('required')">El correo electrónico es obligatorio!</mat-error>
+                          <mat-error *ngIf="loginForm.controls['usrCorreo'].hasError('email')">Correo electrónico no valido!</mat-error>
+
+                      </mat-form-field>
+                  </mat-grid-tile>
+                  <mat-grid-tile>
+                      <mat-form-field appearance="outline">
+                          <mat-label>Contrase&ntilde;a</mat-label>
+                          <input [type]="viewpass ? 'text' : 'password'" formControlName="usrClave" matInput (focus)="error=''">
+                          <mat-icon class="button-icon" matSuffix *ngIf="viewpass == false" (click)="viewpass=!viewpass">visibility</mat-icon>
+                          <mat-icon class="button-icon" matSuffix *ngIf="viewpass == true" (click)="viewpass=!viewpass">visibility_off</mat-icon>
+                          
+                          <mat-error *ngIf="loginForm.controls['usrClave'].hasError('required')">La contraseña es obligatoria!</mat-error>
+
+                      </mat-form-field>
+                  </mat-grid-tile>
+
+              </mat-grid-list>
+
+          </form>
+          <mat-error *ngIf="error !=''">{{error}}</mat-error>
+
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+          <button mat-button routerLink="/home">Cancelar</button>
+          <button mat-raised-button color="primary" [disabled]="loginForm.invalid" (click)="send(loginForm.controls['usrCorreo'].value, loginForm.controls['usrClave'].value)">Login</button>
+      </mat-card-actions>
+
+  </mat-card>
+
+</div>
+
+
+

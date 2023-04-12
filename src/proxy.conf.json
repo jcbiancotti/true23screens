@@ -1,0 +1,9 @@
+{
+    "/backend/*":{
+          "target": "https://biancotti.es/Backend22",
+          "secure": true,
+          "pathRewrite": {"^/backend": ""},
+          "changeOrigin": true,
+          "logLevel": "debug"          
+    }
+}

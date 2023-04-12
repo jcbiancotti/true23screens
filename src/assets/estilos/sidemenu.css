@@ -1,0 +1,112 @@
+
+.mat-sidenav-container {
+    display: flex;
+    width: 100vw;
+    height: auto !important;  
+    min-height: 100% !important;  
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px; /* Margen al pie de la página para separar del footer */
+    background-color: transparent !important;
+    overflow: scroll !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+  
+.mat-sidenav {
+    display: flex;
+    background-color: var(--true-bg-general) !important;
+    color: var(--true-color-general);
+    min-width: 250px;
+    height: 100% !important; 
+    padding-bottom: 100px;
+    overflow: scroll !important; 
+    overflow-y: auto !important; 
+    overflow-x: auto !important; 
+  
+}
+.mat-sidenav-content {
+    background-color: transparent !important;
+    height: auto !important;
+    padding-bottom: 100px !important;
+}
+  
+.showHidden {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    color: var(--true-bg-general);
+    z-index: 998;
+}
+.isHidden {
+    color: var(--true-bg-general);
+    transform: rotate(180deg);
+}
+
+.menuItem {
+    color: var(--true-color-general) !important;
+    cursor: pointer;
+    background-color: transparent !important;
+    width: 100%;
+}
+.menuItem:hover {
+    background-color: var(--true-bg-menuitem) !important;
+    border-radius: 5px;
+    color: var(--true-color-general) !important;
+}
+
+.menuItemBlack {
+    color: var(--true-color-texto) !important;
+    background-color: transparent !important;
+    cursor: pointer;
+    width: 100%;
+}
+.menuItemBlack:hover {
+    background-color: var(--true-bg-menuitem) !important;
+    border-radius: 5px;
+    color: var(--true-color-general) !important;
+}
+
+mat-expansion-panel {
+    background-color: transparent !important;
+    width: 100% !important;
+}
+mat-expansion-panel-header {
+    color: var(--true-color-general) !important;
+    background-color: transparent !important;
+    width: 100% !important;
+    padding-left: 15px !important;
+    padding-top: 5px !important; 
+    padding-bottom: 5px !important;
+    height: auto !important;
+}
+mat-expansion-panel-header > .mat-expansion-indicator:after {
+    color: white;
+    margin: 10px !important;
+}
+mat-expansion-panel-header:hover {
+    background-color: var(--true-bg-menuitem) !important;
+    border-radius: 5px;
+    width: 100% !important;
+}
+mat-list-item {
+    height: 40px !important;    
+}
+
+
+.mat-expansion-panel-body {
+    width: 100% !important;
+    padding-right: 0 !important; 
+    margin: 0 !important;
+}
+
+.conhijos{
+    text-transform: uppercase;
+    font-weight: 400;
+    font-size: 10pt;
+}
+.sinhijos{
+    text-transform: capitalize;
+    font-weight: 200;
+    font-size: 10pt;
+}

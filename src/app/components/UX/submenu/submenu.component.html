@@ -1,0 +1,18 @@
+<!-- SUBMENU -->
+<!-- <div class="submenu"> -->
+<div class="submenu" *ngIf="lSistemStatus.status == 'ERR'" style="background-color: red;">
+  <span  style="color: yellow;" >{{lSistemStatus.texto}}</span>
+</div>
+<div class="submenu" *ngIf="lSistemStatus.status == 'WAR'" style="background-color: yellow;">
+  <span style="color: black;" >{{lSistemStatus.texto}}</span>
+</div>
+<div class="submenu" *ngIf="lSistemStatus.status == 'INF'" style="background-color: green;">
+  <span style="color: lightgreen;" >{{lSistemStatus.texto}}</span>
+</div>
+<div class="submenu" *ngIf="lSistemStatus.status != 'INF' && lSistemStatus.status != 'ERR' && lSistemStatus.status != 'WAR'" style="background-color: white;">
+  <span style="color: black;">&nbsp;{{lSistemStatus.texto}}</span>
+</div>
+  
+<!-- </div> -->
+    
+  
