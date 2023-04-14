@@ -1,0 +1,19 @@
+<div class="true-page">
+
+  <mat-card-title><h1>Filtro de la consulta</h1></mat-card-title>
+
+  <mat-card-content>
+
+      <app-crud2-valores
+          id = "{{id}}"
+          idvalor = "{{idvalor}}"
+          tipo = "Q"
+          tabla = "sys_modelo_datos"
+          [crud2Campos] = "crud2Campos"
+          rutaRetorno = "{{rutaRetorno}}"
+      ></app-crud2-valores>
+
+  </mat-card-content>
+
+</div>
+

@@ -67,8 +67,15 @@ mat-expansion-panel textarea {
   text-align: justify; 
 }
 
-mat-form-field {
+.custom-mat-form-field {
   width: 80%;
   max-width: 460px;
 }
-
+.custom-textarea-mat-form-field {
+  margin-top: 20px;
+  width: 90%;
+}
+.custom-textarea {
+  width: 100%;
+  resize: none !important;
+}

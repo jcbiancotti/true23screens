@@ -11,6 +11,7 @@ import { Funciones, GlobalService, spinnerstatus } from 'src/app/servicios/globa
 })
 export class Crud0Component implements OnInit  {
 
+  @Input() crud0id: string = "";
   @Input() tipo: string = "";
   @Input() rutaAdd: string = "";
   
@@ -111,21 +112,35 @@ export class Crud0Component implements OnInit  {
      }       
     }
 
+    let xlocalCampoOrden: string | null = localStorage.getItem(this.crud0id + "-orden");
+    let xlocalSentido: string | null = localStorage.getItem(this.crud0id + "-sentido");
+
     this.campos.forEach(campo => {
+
+      let xorden: string | null = "none";
+      if (xlocalCampoOrden && xlocalCampoOrden == campo.campo) {
+        xorden = xlocalSentido;
+      }
+
       // Componer array de titulos de las columnas
       this.colTitulos.push({
         literal: campo.titulo,
         ordenar: campo.ordenar,
         campo: campo.campo,
-        orden: 'none'
+        orden: xorden
       });
       // Componer array con los nombres de los campos
       this.colCampos.push({
         campo: campo.campo
       });
     })
-    // Orden ascendente por la primer columna
-    this.colTitulos[0].orden = 'up';
+    // Si no hay valor en localStorage -> Orden ascendente por la primer columna
+    if (!xlocalCampoOrden) {
+      this.colTitulos[0].orden = 'up';
+      localStorage.setItem(this.crud0id + "-orden", this.colTitulos[0].campo);
+      localStorage.setItem(this.crud0id + "-sentido", this.colTitulos[0].orden);
+  
+    }
 
     // Recuperar los registros
     if (this.pantalladefQuery) {
@@ -142,17 +157,35 @@ export class Crud0Component implements OnInit  {
 
     // CAMPO PARA ORDENAR
     let campoOrden = "";
-    let sentido = "none";
+    let sentido: string | null = "none";
+
+    // Recuperar el orden desde localStorage
+    let localCampoOrden: string | null = "";
+    let localSentido: string | null = "";
+
+    if (localStorage.getItem(this.crud0id + "-orden")) {
+      localCampoOrden = localStorage.getItem(this.crud0id + "-orden");
+    }
+    if (localStorage.getItem(this.crud0id + "-sentido")) {
+      localSentido = localStorage.getItem(this.crud0id + "-sentido");
+    }
+
     this.colTitulos.forEach((columna) => {
-      if (columna.orden != 'none') {
+
+      if (columna.orden != 'none' || (localCampoOrden && columna.campo == localCampoOrden)) {
+        
+        columna.orden = localSentido;
+        
         campoOrden = columna.campo;
-        sentido = columna.orden;
+        sentido = localSentido;   // columna.orden;
+
       }
+
     })
 
     if (this.global.DEBUG)
       console.log("Ordenado por", campoOrden, sentido);
-      
+
     // Llamada al servicio de data-access
     await this.dataaccess.idquery(this.pantalladefQuery, this.pageIndex, this.pageSize, [], campoOrden, sentido,
     (respuesta:any, datos:any) => {
@@ -216,6 +249,9 @@ export class Crud0Component implements OnInit  {
     } else if (xord == 'none') {
       this.colTitulos[xcol].orden = 'up';
     }
+
+    localStorage.setItem(this.crud0id + "-orden", this.colTitulos[columna].campo);
+    localStorage.setItem(this.crud0id + "-sentido", this.colTitulos[columna].orden);
 
     this.pageEvent = { previousPageIndex: this.pageIndex, pageIndex: 0, pageSize: this.pageSize, length: this.length };
     this.handlePageEvent(this.pageEvent);

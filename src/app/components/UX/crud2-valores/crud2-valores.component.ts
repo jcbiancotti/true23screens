@@ -3,7 +3,6 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Router } from '@angular/router';
 import { DataAccessService } from 'src/app/servicios/data-access.service';
 import { Funciones, GlobalService, spinnerstatus } from 'src/app/servicios/global.service';
-import { NavigationService } from 'src/app/servicios/navigation.service';
 
 @Component({
   selector: 'app-crud2-valores',
@@ -32,7 +31,6 @@ export class Crud2ValoresComponent implements OnInit {
     private funciones: Funciones,
     private router: Router, 
     private showspinner: spinnerstatus,
-    private navigation: NavigationService,
     private dataaccess: DataAccessService,
     private fb: FormBuilder,
 
@@ -57,13 +55,13 @@ export class Crud2ValoresComponent implements OnInit {
     this.crud2Form = new FormGroup({});    
 
     this.crud2Form = this.fb.group({});
-    this.crud2Campos.forEach((campo: { id: string; valordefault: any; ancho: number; requerido: any; formato: string; }) => {
-      this.crud2Form.addControl(campo.id, new FormControl(campo.valordefault, [Validators.maxLength(campo.ancho)]));
+    this.crud2Campos.forEach((campo: { campo: string; valordefault: any; ancho: number; requerido: any; formato: string; }) => {
+      this.crud2Form.addControl(campo.campo, new FormControl(campo.valordefault, [Validators.maxLength(campo.ancho)]));
       if(campo.requerido) {
-        this.crud2Form.controls[campo.id].addValidators(Validators.required);
+        this.crud2Form.controls[campo.campo].addValidators(Validators.required);
       }      
       if(campo.formato == 'E') {
-        this.crud2Form.controls[campo.id].addValidators(Validators.email);
+        this.crud2Form.controls[campo.campo].addValidators(Validators.email);
       }
     })
 
@@ -99,6 +97,10 @@ export class Crud2ValoresComponent implements OnInit {
                 aValor = tmpObjeto.oTabla.oCampos.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
                 break;
               }
+              case 'Q': {
+                aValor = tmpObjeto.oQuery.oFiltros.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                break;
+              }                
             }
 
             this.crud2Campos.forEach((campo: { campo: string | number; }) => {
@@ -129,7 +131,6 @@ export class Crud2ValoresComponent implements OnInit {
       let resp = this.global.mensaje("Hay cambios!", "Descartas los cambios?", "Q", "Si", "No");
       resp.afterClosed().subscribe(async dlgResp => {
         if (dlgResp == true) {
-          // this.navigation.back()
           this.router.navigateByUrl(this.rutaRetorno + this.id);
         }
       })
@@ -187,7 +188,24 @@ export class Crud2ValoresComponent implements OnInit {
             tmpObjeto.oTabla.oCampos = tmpCampos;
             break;
           }
-            
+          case 'Q': {
+
+            let tmpFiltros: any[] = [];
+            if (tmpObjeto.oQuery.oFiltros) {
+              tmpFiltros = tmpObjeto.oQuery.oFiltros;
+            }
+
+            tmpFiltros.push({
+              id: this.funciones.generarUUID(""),
+              etiqueta: this.crud2Form.controls['etiqueta'].value,
+              tipo: this.crud2Form.controls['tipo'].value,
+              campo: this.crud2Form.controls['campo'].value,
+              obligatorio: this.crud2Form.controls['obligatorio'].value
+            })
+            tmpObjeto.oQuery.oFiltros = tmpFiltros;
+            break;
+          }
+
         }  // Fin del switch TIPO
 
 
@@ -230,7 +248,22 @@ export class Crud2ValoresComponent implements OnInit {
             })
             break;
           }
-            
+          case 'Q': {
+          
+            tmpObjeto.oQuery.oFiltros.forEach((dato: { id: string; etiqueta: any; tipo: any; campo: any; obligatorio: boolean; }) => {
+              
+              if (dato.id == this.idvalor) {
+
+                dato.etiqueta = this.crud2Form.controls['etiqueta'].value;
+                dato.tipo = this.crud2Form.controls['tipo'].value;
+                dato.campo = this.crud2Form.controls['campo'].value;
+                dato.obligatorio = this.crud2Form.controls['obligatorio'].value;
+                
+              }
+
+            })
+            break;
+          } 
         }  // Fin del switch TIPO
 
       }
@@ -273,8 +306,98 @@ export class Crud2ValoresComponent implements OnInit {
   }
   cambiarValores(item: string) {
 
-    if (item != 'N' && item != 'M') {
-      this.crud2Form.controls["decimales"].patchValue(0);
+    // Solo cuando es el campo de una tabla
+    if (this.tipo == 'T') {
+
+      let ancho, decimales, valdefault: boolean = false;
+      let vvaldefault: string = "";
+      let vancho: number = 0;
+
+      switch (item) {
+        case 'C': {
+          ancho = true;
+          decimales = false;
+          valdefault = true;
+          break;
+        }
+        case 'N':
+        case 'M': {
+          ancho = true;
+          decimales = true;
+          valdefault = true;          
+          break;
+        }
+        case 'K': {
+          ancho = false;
+          vancho = 10;
+          decimales = false;
+          valdefault = true;
+          break;
+        }
+        case 'D': {
+          ancho = false;
+          decimales = false;
+          valdefault = true;
+          break;
+        }
+        case 'T': {
+          ancho = false;
+          decimales = false;
+          valdefault = true;
+          break;
+        }
+        case 'H': {
+          ancho = false;
+          decimales = false;
+          valdefault = true;
+          break;
+        }
+        case 'A': {
+          ancho = false;
+          vancho = 65535;
+          decimales = false;
+          valdefault = false;
+          break;
+        }
+        case 'S': {
+          ancho = false;
+          decimales = false;
+          valdefault = false;
+          vvaldefault = "CURRENT_TIMESTAMP";
+          break;
+        }
+      }
+
+      // Ajustar ANCHO
+      if (ancho) {
+        this.crud2Form.controls["ancho"].enable();
+      } else {
+        this.crud2Form.controls["ancho"].disable();
+        this.crud2Form.controls["ancho"].patchValue(0);
+      }
+      if (vancho != 0) {
+        this.crud2Form.controls["ancho"].patchValue(vancho);
+      }  // Si no lo deja igual
+      
+      // Ajustar DECIMALES
+      if (decimales) {
+        this.crud2Form.controls["decimales"].enable();
+      } else {
+        this.crud2Form.controls["decimales"].disable();
+        this.crud2Form.controls["decimales"].patchValue(0);
+      }
+
+      // Ajustar DEFECTO
+      if (valdefault) {
+        this.crud2Form.controls["default"].enable();
+        if (vvaldefault != "") {
+          this.crud2Form.controls["default"].patchValue(vvaldefault);
+        }  // Si no lo deja igual
+      } else {
+        this.crud2Form.controls["default"].disable();
+        this.crud2Form.controls["default"].patchValue(vvaldefault);
+      }
+ 
     }
 
   }

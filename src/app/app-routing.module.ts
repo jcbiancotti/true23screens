@@ -29,6 +29,7 @@ import { ScrCrud0sComponent } from './components/vistas/scr-crud0s/scr-crud0s.co
 import { ScrCrud1sComponent } from './components/vistas/scr-crud1s/scr-crud1s.component';
 import { ScrListadoComponent } from './components/vistas/scr-listado/scr-listado.component';
 import { MdTablaCampoComponent } from './components/vistas/md-tabla-campo/md-tabla-campo.component';
+import { MdConsultasqlFiltroComponent } from './components/vistas/md-consultasql-filtro/md-consultasql-filtro.component';
 
 
 const routes: Routes = [
@@ -60,6 +61,8 @@ const routes: Routes = [
       { path: 'consultassql', component: MdConsultassqlComponent, canActivate: [GuardInGuard]},  
       { path: 'consultasql', component: MdConsultasqlComponent, canActivate: [GuardInGuard]},  
       { path: 'consultasql/:id', component: MdConsultasqlComponent, canActivate: [GuardInGuard]},  
+      { path: 'consultasqlfiltro/:id', component: MdConsultasqlFiltroComponent, canActivate: [GuardInGuard]},  
+      { path: 'consultasqlfiltro/:id/:idvalor', component: MdConsultasqlFiltroComponent, canActivate: [GuardInGuard]},  
 
       { path: 'listasseleccionables', component: MdListasseleccionablesComponent, canActivate: [GuardInGuard] },  
       { path: 'listaseleccionable', component: MdListaseleccionableComponent, canActivate: [GuardInGuard] },  

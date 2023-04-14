@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { DataAccessService } from 'src/app/servicios/data-access.service';
-import { NavigationService } from 'src/app/servicios/navigation.service';
 import { Funciones, GlobalService, sistemStatusService, spinnerstatus } from 'src/app/servicios/global.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { SistemaService } from 'src/app/servicios/sistema.service';
 
 @Component({
   selector: 'app-crud1-convalores',
@@ -61,11 +61,11 @@ export class Crud1ConvaloresComponent implements OnInit {
   
   constructor (
     private global: GlobalService,
+    private sistema: SistemaService,
     private funciones: Funciones,
     private router: Router, 
     private showspinner: spinnerstatus,
     private statusmensaje: sistemStatusService,
-    private navigation: NavigationService,
     private dataaccess: DataAccessService,
     private fb: FormBuilder,
 
@@ -125,7 +125,12 @@ export class Crud1ConvaloresComponent implements OnInit {
             this.crud1Form.controls["descripcion"].patchValue(datos[0]['descripcion']);
             this.crud1Form.controls["tabla"].patchValue(this.objetoCompleto.oTabla.nombre);
             break;
-            }
+          }
+          case 'Q': {
+            this.crud1Form.controls["descripcion"].patchValue(datos[0]['descripcion']);
+            this.crud1Form.controls["cadenaSQL"].patchValue(this.objetoCompleto.oQuery.cadenaSQL);
+            break;
+          }
         }
 
         this.pErrores = [];
@@ -344,6 +349,103 @@ export class Crud1ConvaloresComponent implements OnInit {
         break;
 
       }
+      case 'Q': {
+
+        this.tools = true;
+        this.label_agregar = "Agregar filtro";
+
+        // Los campos del formulario principal del registro
+        this.campos = [
+          {
+            id: this.funciones.generarUUID(""),
+            campo: "id",
+            requerido: true,
+            etiqueta: "ID",
+            valordefault: "",
+            ancho: 13,
+            formato: "C",
+            disable: true,
+            visible: false
+          },
+          {
+            id: this.funciones.generarUUID(""),
+            campo: "descripcion",
+            requerido: true,
+            etiqueta: "Descripcion",
+            valordefault: "",
+            ancho: 100,
+            formato: "C",
+            disable: false,
+            visible: true
+          },
+          {
+            id: this.funciones.generarUUID(""),
+            campo: "cadenaSQL",
+            requerido: true,
+            etiqueta: "Cadena SQL",
+            valordefault: "",
+            ancho: 2000,
+            formato: "A",
+            disable: false,
+            visible: true
+          },
+          {
+            id: this.funciones.generarUUID(""),
+            campo: "objeto",
+            requerido: true,
+            etiqueta: "objeto",
+            valordefault: "",
+            ancho: 2000,
+            formato: "C",
+            disable: false,
+            visible: false
+          }
+        ];   
+
+        // Las columnas de la tabla de valores
+        this.colTitulos = [
+          {
+            literal: "ID",
+            ordenar: false,
+            orden: false,
+            campo: "id"
+          },
+          {
+            literal: "Etiqueta",
+            ordenar: false,
+            orden: "none",
+            campo: "etiqueta"
+          },
+          {
+            literal: "Tipo",
+            ordenar: false,
+            orden: "none",
+            campo: "ntipo"
+          },
+          {
+            literal: "Variable en la cadena",
+            ordenar: false,
+            orden: "none",
+            campo: "campo"
+          },
+          {
+            literal: "Obligatorio",
+            ordenar: false,
+            orden: "none",
+            campo: "obligatorio"
+          }
+        ];
+        // Tipos de campos
+        this.tiposCampo = this.funciones.tiposCampo;
+        
+        /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
+        this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));
+        this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));
+        this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(2000)]));
+        
+        break;
+
+      }
         
     }
 
@@ -459,9 +561,27 @@ export class Crud1ConvaloresComponent implements OnInit {
             break;
           }
           case "Q": {
+
+            let tmpFiltros: any[] = [];
+
+            if (this.objetoCompleto && this.objetoCompleto.oQuery && this.objetoCompleto.oQuery.oFiltros) {
+              this.objetoCompleto.oQuery.oFiltros.forEach((reg: { obligatorio: string; id: any; etiqueta: any; tipo: any; campo: any; }) => {
+                let xBoolean = false;
+                if (reg.obligatorio == "Si") {
+                  xBoolean = true;
+                }
+                tmpFiltros.push({
+                  id: reg.id,
+                  etiqueta: reg.etiqueta,
+                  tipo: reg.tipo,
+                  campo: reg.campo,
+                  obligatorio: xBoolean
+                });
+              })
+            }
             objQuery = {
-              cadenaSQL: '',
-              oFiltros: []
+              cadenaSQL: this.crud1Form.controls['cadenaSQL'].value,
+              oFiltros: tmpFiltros
             }
             break;
           }
@@ -605,6 +725,10 @@ export class Crud1ConvaloresComponent implements OnInit {
             tmpObjeto.oTabla.oCampos = tmpObjeto.oTabla.oCampos.filter((valor: { id: string; }) => valor.id != pId);
             break;
           }
+          case 'Q': {
+            tmpObjeto.oQuery.oFiltros = tmpObjeto.oQuery.oFiltros.filter((valor: { id: string; }) => valor.id != pId);
+            break;
+          }
         }
 
         this.registroCompleto.objeto = JSON.stringify(tmpObjeto);
@@ -690,6 +814,30 @@ export class Crud1ConvaloresComponent implements OnInit {
         }
         break;
       }
+      case 'Q': {
+        if (this.objetoCompleto.oQuery.oFiltros) {
+
+          this.objetoCompleto.oQuery.oFiltros.forEach((reg: { id: string; etiqueta: string; tipo: string; campo: string; obligatorio: boolean; }) => {
+
+            let unTipo = this.tiposCampo.filter(tipo => tipo.codigo.startsWith(reg.tipo));
+
+            let xBoolean = "No";
+            if (reg.obligatorio == true) {
+              xBoolean = "Si";
+            }
+            this.registros.push({
+              id: reg.id,
+              etiqueta: reg.etiqueta,
+              tipo: reg.tipo,
+              ntipo: unTipo[0].texto,
+              campo: reg.campo,
+              obligatorio: xBoolean,
+            })
+
+          });
+        }
+        break;
+      }
     }
 
     if (this.registros.length > 0) {
@@ -771,6 +919,7 @@ export class Crud1ConvaloresComponent implements OnInit {
 
                 if (this.objetoCompleto && this.objetoCompleto.oTabla && this.objetoCompleto.oTabla.oCampos) {
                   this.objetoCompleto.oTabla.oCampos.forEach((reg: { id: any; nombre: any; tipo: any; ancho: any; decimales: any; etiqueta: any; default: any; }) => {
+                    
                     tmpCampos.push({
                       id: reg.id,
                       nombre: reg.nombre,
@@ -780,6 +929,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                       etiqueta: reg.etiqueta,
                       default: reg.default
                     });
+
                   })                  
                 }  
                 objTabla = {
@@ -789,9 +939,30 @@ export class Crud1ConvaloresComponent implements OnInit {
                 break;
               }
               case "Q": {
+
+                let tmpFiltros: any[] = [];
+
+                if (this.objetoCompleto && this.objetoCompleto.oQuery && this.objetoCompleto.oQuery.oFiltros) {
+                  this.objetoCompleto.oQuery.oFiltros.forEach((reg: { obligatorio: string; id: any; etqueta: any; tipo: any; campo: any; }) => {
+
+                    let xBoolean = false;
+                    if (reg.obligatorio == "Si") {
+                      xBoolean = true;
+                    }
+                    
+                    tmpFiltros.push({
+                      id: reg.id,
+                      etiqueta: reg.etqueta,
+                      tipo: reg.tipo,
+                      campo: reg.campo,
+                      obligatorio: xBoolean
+                    });         
+                    
+                  })                  
+                }  
                 objQuery = {
-                  cadenaSQL: '',
-                  oFiltros: []
+                  cadenaSQL: this.crud1Form.controls['cadenaSQL'].value,
+                  oCampos: tmpFiltros
                 }
                 break;
               }
@@ -913,7 +1084,7 @@ export class Crud1ConvaloresComponent implements OnInit {
     let pTabla = this.crud1Form.controls['tabla'].value;
 
     // Verificar si la tabla existe
-    let existe = this.tablasBBDD.filter(t => t.table_name == pTabla).length > 0;
+    let existe = this.tablasBBDD.filter((t: { table_name: any; }) => t.table_name == pTabla).length > 0;
 
     if (existe) {
       await this.dataaccess.estructura(pTabla,
@@ -948,14 +1119,16 @@ export class Crud1ConvaloresComponent implements OnInit {
           let deleted = false;
           
           // Comprobar si los campos de la BBDD están en la definición
-          datos.forEach((campo: { nombre: any; }) => {
+          datos.forEach((campo: { nombre: string; tipo: any; valdefault: string, cancho: number, nancho: number, decimales: number}) => {
 
             let esta: boolean = false;
+            let xDefCampo: any;
 
             if (this.objetoCompleto.oTabla.oCampos && this.objetoCompleto.oTabla.oCampos.length != 0) {
-              this.objetoCompleto.oTabla.oCampos.forEach((defCampo: { nombre: any; }) => {
+              this.objetoCompleto.oTabla.oCampos.forEach((defCampo: { nombre: any; tipo: string, default: string, ancho: number, decimales: number}) => {
                 if (defCampo.nombre == campo.nombre) {
                   esta = true;
+                  xDefCampo = defCampo;
                 }
               })
             }
@@ -989,13 +1162,92 @@ export class Crud1ConvaloresComponent implements OnInit {
 
             if (esta) {
               
-              // El campo existe -> Comprobar la definición del campo
-                // El campo tiene diferencias de definición -> Alter table
-                //  -> modificar el campo según la definición
-              // ó
-                //  -> modificar la definición según el campo
-              
-              // El campo está igual definido que en la BBDD -> Nada
+              // El campo existe -> Comprobar la definición del campo ( comparar campo VS xDefCampo)
+              let xdiferencias: string = "";
+              let xtipo: string = "";
+              let xancho: number = 0;
+              let xvaldef: string = "";
+              let xdefau: string = "";
+              let xdeftipo: string = "";
+
+              // Ajustar el tipo y el ancho
+              if (campo.tipo == "int") {
+                xtipo = "K";
+                xancho = campo.nancho;
+              } else if (campo.tipo == "decimal" || campo.tipo == "number") {
+                xtipo = "N";
+                xancho = campo.nancho;
+
+              } else if (campo.tipo == "varchar") {
+                xtipo = "C";
+                xancho = campo.cancho;
+              } else if (campo.tipo == "datetime") {
+                xtipo = "T";
+                xancho = campo.cancho;
+              } else if (campo.tipo == "date") {
+                xtipo = "D";
+                xancho = campo.cancho;
+              } else if (campo.tipo == "timestamp") {
+                xtipo = "S";
+                xancho = campo.cancho;
+              } else if (campo.tipo == "time") {
+                xtipo = "H";
+                xancho = campo.cancho;
+              } else if (campo.tipo == "text") {
+                xtipo = "A";
+                xancho = campo.cancho;
+              }
+
+              // Ajustar el tipo de la definición
+              xdeftipo = xDefCampo.tipo;
+              if (xdeftipo == "M") {
+                xdeftipo = "N";
+              }
+
+              // Ajustar el valor por defecto
+              xvaldef = campo.valdefault;
+              if (campo.valdefault == null) {
+                xvaldef = "";
+              } 
+              if (xtipo == "N") {
+                xvaldef = xvaldef.replace(".", ",");
+              }
+              xdefau = xDefCampo.default;
+              if (xdefau == 'undefined' || xdefau == null) {
+                xdefau = "";
+              }
+
+              // Comparar diferencias
+              let bitDiferencias = 0;
+
+              if (xtipo != xdeftipo) {
+                xdiferencias += " Tipo de campo";
+                bitDiferencias += 100
+              }
+              if ((xtipo != "D" && xtipo != "T" && xtipo != "H") && xancho != xDefCampo.ancho) {
+                xdiferencias += " Ancho del campo " + xancho;
+                bitDiferencias += 10;
+              }
+              if (xvaldef != xdefau) {
+                xdiferencias += " Valor por defecto en la tabla:" + xvaldef + " vs. en la definición:" + xdefau;
+                bitDiferencias += 1;
+              }              
+              // Agregar el error
+              if (xdiferencias != "") {
+                this.pErrores.push({
+                  id: this.funciones.generarUUID(""),
+                  categoria: "ERR",
+                  texto: "El campo '" + campo.nombre + "' tiene diferencias entre la definición y la tabla (" + xdiferencias + ")",
+                  accionTxt: "Revisar definición",
+                  accionSQL: "ALTER TABLE",
+                  resuelto: false,
+                  manual: true,
+                  add2def: false,
+                  diferencias: bitDiferencias,
+                  objeto: {campo: campo, defCampo: xDefCampo }
+                })
+              }
+
 
             } else {
               // El campo no existe en la definición -> Alter table -> crear campo  // Alter table eliminar campo
@@ -1008,7 +1260,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 resuelto: false,
                 manual: true,
                 add2def: true,
-                objeto: campo
+                objeto: campo,
+                diferencias: 0
               })
 
             }
@@ -1026,17 +1279,9 @@ export class Crud1ConvaloresComponent implements OnInit {
               }
             })
             
-            if (esta) {
+            // No se compara la definición del campo existente porque ya se ha comprobado en el paso anterior
+            if (!esta) {
 
-              // El campo existe -> Comprobar la definición del campo
-          
-              // El campo está igual definido que en la BBDD -> Nada
-          
-              // El campo tiene diferencias de definición -> Alter table
-              //  -> modificar el campo según la definición
-              //  -> modificar la definición según el campo
-          
-            } else {
               // El campo no existe -> Alter table -> crear campo o Delete en la definicion
               this.pErrores.push({
                 id: this.funciones.generarUUID(""),
@@ -1048,7 +1293,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 manual: true,
                 add2def: false,
                 add2table: true,
-                objeto: defCampo
+                objeto: defCampo,
+                diferencias: 0
               })
 
             }
@@ -1076,7 +1322,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 id: this.funciones.generarUUID(""),
                 nombre: "clave",
                 tipo: "K"
-              }
+              },
+              diferencias: 0
             })
           }
           if (!id) {
@@ -1098,7 +1345,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 id: this.funciones.generarUUID(""),
                 nombre: "id",
                 tipo: "C"
-              }
+              },
+              diferencias: 0
             })
           }          
           if (!created_at) {
@@ -1120,7 +1368,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 id: this.funciones.generarUUID(""),
                 nombre: "created_at",
                 tipo: "S"
-              }
+              },
+              diferencias: 0
             })
           }
           if (!updated_at) {
@@ -1142,7 +1391,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 id: this.funciones.generarUUID(""),
                 nombre: "updated_at",
                 tipo: "S"
-              }
+              },
+              diferencias: 0
             })
           }
           if (!deleted_at) {
@@ -1164,7 +1414,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 id: this.funciones.generarUUID(""),
                 nombre: "deleted_at",
                 tipo: "S"
-              }
+              },
+              diferencias: 0
             })
           }
           if (!deleted) {
@@ -1186,7 +1437,8 @@ export class Crud1ConvaloresComponent implements OnInit {
                 id: this.funciones.generarUUID(""),
                 nombre: "deleted",
                 tipo: "K"
-              }
+              },
+              diferencias: 0
             })
           }     
           
@@ -1211,7 +1463,8 @@ export class Crud1ConvaloresComponent implements OnInit {
         resuelto: false,
         manual: false,
         add2def: false,
-        objeto: null
+        objeto: null,
+        diferencias: 0
       })
 
       // Comprobar si hay campos en la definición
@@ -1229,7 +1482,8 @@ export class Crud1ConvaloresComponent implements OnInit {
           resuelto: false,
           manual: true,
           add2def: false,
-          objeto: null
+          objeto: null,
+          diferencias: 0
         })
       }
 
@@ -1249,32 +1503,65 @@ export class Crud1ConvaloresComponent implements OnInit {
   async goRecuperarDefinicion() {
 
     // Verificar si la tabla existe
+    let pDescripcion = this.crud1Form.controls['descripcion'].value;
     let pTabla = this.crud1Form.controls['tabla'].value;
-    let existe = this.tablasBBDD.filter(t => t.table_name == pTabla).length > 0;
+    let existe = this.tablasBBDD.filter((t: { table_name: any; }) => t.table_name == pTabla).length > 0;
 
+    // La tabla no existe, no se pueden recuperar los campos
     if (!existe) {
 
       const resp = this.global.mensaje("Error!", "La tabla '" + pTabla + "' no existe en la BBDD!", "E", "Aceptar", "");
-      resp.afterClosed().subscribe(async dlgResp => {});   
+      resp.afterClosed().subscribe(async (dlgResp: any) => {});   
 
     } else {
 
-      if (this.registros.length > 0) {
-        const resp = this.global.mensaje("Atención!", "Si recuperas la definición desde la BBDD se eliminará la definición existente!", "E", "Continuar", "Cancelar");
-        resp.afterClosed().subscribe(async dlgResp => {
+      // La tabla existe. La definición es nueva?
+      if (this.nuevo) {
+
+        const resp = this.global.mensaje("Aviso!", "Se va a almacenar la definición de la tabla '" + pDescripcion + "'!", "W", "Continuar", "Cancelar");
+        resp.afterClosed().subscribe(async (dlgResp: boolean) => {
           if (dlgResp == true) {
-            this.leerDefinicionDesdeBBDD();
+
+            // En nueva y hay campos definidos (raro, porque al añadir un campo se está grabando la definición)
+            if (this.registros.length > 0) {
+              const resp = this.global.mensaje("Atención!", "Si recuperas la definición desde la BBDD se eliminará la definición existente!", "W", "Continuar", "Cancelar");
+              resp.afterClosed().subscribe(async (dlgResp: boolean) => {
+                if (dlgResp == true) {
+                  this.leerDefinicionDesdeBBDD();
+                }
+              });
+              
+            } else {
+              // Es nueva y no hay campos definidos
+              this.leerDefinicionDesdeBBDD();
+            }
+
           }
         });
+
       } else {
-        this.leerDefinicionDesdeBBDD();
+
+        // No es una definición nueva y hay campos definidos
+        if (this.registros.length > 0) {
+          const resp = this.global.mensaje("Atención!", "Si recuperas la definición desde la BBDD se eliminará la definición existente!", "W", "Continuar", "Cancelar");
+          resp.afterClosed().subscribe(async (dlgResp: boolean) => {
+            if (dlgResp == true) {
+              this.leerDefinicionDesdeBBDD();
+            }
+          });
+          
+        } else {
+          // No es una definición nueva y NO hay campos definidos
+          this.leerDefinicionDesdeBBDD();
+        }
+
       }
 
     }
 
   }
-  async leerDefinicionDesdeBBDD() {
 
+  async leerDefinicionDesdeBBDD() {
     
     this.showspinner.updateShowSpinner(true);
 
@@ -1288,10 +1575,13 @@ export class Crud1ConvaloresComponent implements OnInit {
         if (this.global.DEBUG)
           console.log("Estructura recibida en el front:", respuesta, datos);
 
+        // Tabla nueva
+        if (this.nuevo) {
+          this.objetoCompleto = {};
+          this.objetoCompleto.oTabla = {};
+        }
+        
         // Eliminar la definición existente
-
-
-         //// COMO TODAVIA NO SE CREO EL objeto completo FALLA
         this.objetoCompleto.oTabla = { nombre: pTabla, oCampos: [] };
 
         // Recorrer los campos y crear definiciones
@@ -1335,31 +1625,88 @@ export class Crud1ConvaloresComponent implements OnInit {
 
         })  // Final de los campos recuperados
         
-        // Almacenar la dedinición creada
-        this.registroCompleto.objeto = JSON.stringify(this.objetoCompleto);
-  
+        // Si aun no se ha guardado la tabla crea el objeto vacio
+        if (this.nuevo) {
+          
+          this.id = this.funciones.generarUUID("");
+
+          this.registroCompleto = {
+            id: this.id,
+            tipo: "T",
+            descripcion: this.crud1Form.controls['descripcion'].value,
+            entorno: "C",
+            objeto: {
+              oDatosGenerales: {
+                tipo: 'T',
+                descripcion: this.crud1Form.controls['descripcion'].value,
+                entorno: 'C'
+              },
+              oLista: [],
+              oTabla: {
+                nombre: pTabla,
+                oCampos: []
+              },
+              oQuery: {},
+              oSelectable: {}
+            }
+          }
+        }
+
         if (this.global.DEBUG)
           console.log(this.objetoCompleto, this.registroCompleto);
 
-        await this.dataaccess.update(this.tabla, "", "id = '" + this.id + "'", ["objeto"], this.registroCompleto,
-        async (respuesta: any, datos: any) => {
-      
-          if (respuesta == 'OK') {
-      
-            if (this.global.DEBUG)
-              console.log(respuesta);
-            
-            // Actualizar la lista de campos
-            this.recuperarContenido();
+        // Almacenar la dedinición creada
+        this.registroCompleto.objeto = JSON.stringify(this.objetoCompleto);
 
-            this.showspinner.updateShowSpinner(false);
+        if (this.nuevo) {
 
-          } else {
-            // Quitar el spinner y quedar en crud1
-            this.showspinner.updateShowSpinner(false);
-          }
-    
-        })        
+          // Crear porque no existe
+          await this.dataaccess.add(this.tabla, "", ["tipo", "descripcion", "entorno", "objeto"], this.registroCompleto,
+          async (respuesta: any, datos: any) => {
+        
+            if (respuesta == 'OK') {
+        
+              if (this.global.DEBUG)
+                console.log(respuesta);
+              
+              // Actualizar la lista de campos
+              this.crud1Form.markAsUntouched();
+              this.recuperarContenido();
+
+              this.showspinner.updateShowSpinner(false);
+
+            } else {
+              // Quitar el spinner y quedar en crud1
+              this.showspinner.updateShowSpinner(false);
+            }
+      
+          })    
+
+        } else {
+
+          // Ya existe, actualizar
+          await this.dataaccess.update(this.tabla, "", "id = '" + this.id + "'", ["objeto"], this.registroCompleto,
+          async (respuesta: any, datos: any) => {
+        
+            if (respuesta == 'OK') {
+        
+              if (this.global.DEBUG)
+                console.log(respuesta);
+              
+              // Actualizar la lista de campos
+              this.crud1Form.markAsUntouched();
+              this.recuperarContenido();
+
+              this.showspinner.updateShowSpinner(false);
+
+            } else {
+              // Quitar el spinner y quedar en crud1
+              this.showspinner.updateShowSpinner(false);
+            }
+      
+          })    
+
+        }    
 
       } else {
         // Quitar el spinner y quedar en crud1
@@ -1375,7 +1722,7 @@ export class Crud1ConvaloresComponent implements OnInit {
 
     let accionManual = false;
 
-    this.pErrores.forEach(e => {
+    this.pErrores.forEach((e: { manual: any; }) => {
       if (e.manual) {
         accionManual = true;
       }
@@ -1384,7 +1731,7 @@ export class Crud1ConvaloresComponent implements OnInit {
     if (accionManual) {
       
       const resp = this.global.mensaje("Bloqueo!", "Se requiere una acción manual antes de poder crear la tabla", "E", "Aceptar", "");
-      resp.afterClosed().subscribe(async dlgResp => { });
+      resp.afterClosed().subscribe(async (dlgResp: any) => { });
       
     } else {
 
@@ -1392,10 +1739,10 @@ export class Crud1ConvaloresComponent implements OnInit {
       let pTabla = this.crud1Form.controls['tabla'].value;
       let pDescripcion = this.crud1Form.controls['descripcion'].value;
       
-      let elError = this.pErrores.filter(e => e.id == errid)
+      let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid)
 
       const resp = this.global.mensaje("Atención!", "Se va a crear la tabla '" + pTabla + "'!", "W", "Continuar", "Cancelar");
-      resp.afterClosed().subscribe(async dlgResp => { 
+      resp.afterClosed().subscribe(async (dlgResp: boolean) => { 
         if (dlgResp == true) {
         
           // Crar la tabla
@@ -1542,7 +1889,7 @@ export class Crud1ConvaloresComponent implements OnInit {
               this.showspinner.updateShowSpinner(false);
         
               const resp = this.global.mensaje("Tarea realizada!", "Se ha creado la tabla: " + pDescripcion + " (" + pTabla + ") según la definición!", "I", "Aceptar", "");
-              resp.afterClosed().subscribe(async dlgResp => {
+              resp.afterClosed().subscribe(async (dlgResp: any) => {
 
                   // Actualizar la lista de campos
                   this.goCompararEstructura();
@@ -1575,18 +1922,21 @@ export class Crud1ConvaloresComponent implements OnInit {
   async add2definicion(errid: string) {
 
     const resp = this.global.mensaje("Atención!", "Quieres agregar el campo de la tabla en la definición?", "W", "Si, agrégalo", "No");
-    resp.afterClosed().subscribe(async dlgResp => {
+    resp.afterClosed().subscribe(async (dlgResp: boolean) => {
       if (dlgResp == true) {
       
         // Añadir el campo a la definición
 
         this.showspinner.updateShowSpinner(true);
 
-        let elError = this.pErrores.filter(e => e.id == errid)
+        let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid)
         let xtipo = "";
         let xancho = 0;
 
-        if (elError[0].objeto.tipo == "int" || elError[0].objeto.tipo == "decimal") {
+        if (elError[0].objeto.tipo == "int") {
+          xtipo = "K";
+          xancho = elError[0].objeto.nancho;
+        } else if (elError[0].objeto.tipo == "decimal") {
           xtipo = "N";
           xancho = elError[0].objeto.nancho;
         } else if (elError[0].objeto.tipo == "varchar") {
@@ -1661,11 +2011,11 @@ export class Crud1ConvaloresComponent implements OnInit {
   // /////////////////// EL CAMPO ESTA EN LA TABLA Y NO EN LA DEFINICION -> BORRARLO DE LA TABLA /////////////////////////
   async del2tabla(errid: string) {
     
-    let elError = this.pErrores.filter(e => e.id == errid);
+    let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid);
     let pTabla = this.crud1Form.controls['tabla'].value;
     
     const resp = this.global.mensaje("Atención!", "Quieres ELIMINAR el campo '" + elError[0].objeto.nombre + "' de la tabla '" + pTabla + "'? (Si contiene datos, estos se perderán)", "W", "Si, elimínalo", "No");
-    resp.afterClosed().subscribe(async dlgResp => {
+    resp.afterClosed().subscribe(async (dlgResp: boolean) => {
       if (dlgResp == true) {
       
         // Añadir el campo a la definición
@@ -1708,7 +2058,7 @@ export class Crud1ConvaloresComponent implements OnInit {
           this.showspinner.updateShowSpinner(false);
     
           const resp = this.global.mensaje("Campo eliminado!", "Se ha eliminado el campo '" + elError[0].objeto.nombre + " de la tabla '" + pTabla + "'!", "I", "Aceptar", "");
-          resp.afterClosed().subscribe(async dlgResp => { 
+          resp.afterClosed().subscribe(async (dlgResp: any) => { 
 
             // Actualizar la lista de campos
             this.recuperarContenido();
@@ -1731,11 +2081,11 @@ export class Crud1ConvaloresComponent implements OnInit {
   // /////////////////// EL CAMPO ESTA EN LA DEFINICION Y NO EN LA TABLA -> AGREGARLO EN LA TABLA ///////////////////////
   async add2table(errid: string) {
 
-    let elError = this.pErrores.filter(e => e.id == errid)
+    let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid)
     let pTabla = this.crud1Form.controls['tabla'].value;
 
     const resp = this.global.mensaje("Atención!", "Quieres CREAR el campo '" + elError[0].objeto.nombre + "' en la tabla '" + pTabla + "'?", "W", "Si, créalo", "No");
-    resp.afterClosed().subscribe(async dlgResp => {
+    resp.afterClosed().subscribe(async (dlgResp: boolean) => {
       if (dlgResp == true) {
       
         this.showspinner.updateShowSpinner(true);
@@ -1752,10 +2102,12 @@ export class Crud1ConvaloresComponent implements OnInit {
             xcampodef += " DEFAULT '0'";
           }
         }
-        if (elError[0].objeto.tipo == 'N') {
+        if (elError[0].objeto.tipo == 'N' || elError[0].objeto.tipo == 'M') {
           xcampodef += "decimal(" + elError[0].objeto.ancho + "," + elError[0].objeto.decimales + ") NULL";
-          if (elError[0].objeto.default != "") {
+          if (elError[0].objeto.default && elError[0].objeto.default != "") {
             xcampodef += " DEFAULT " + elError[0].objeto.default.replace(",",".");
+          } else {
+            xcampodef += " DEFAULT NULL";
           }
         }
         if (elError[0].objeto.tipo == 'C') {
@@ -1773,19 +2125,19 @@ export class Crud1ConvaloresComponent implements OnInit {
         if (elError[0].objeto.tipo == 'D') {
           xcampodef += "date";
           if (elError[0].objeto.default != "") {
-            xcampodef += " DEFAULT " + elError[0].objeto.default;
+            xcampodef += " DEFAULT '" + elError[0].objeto.default + "'";
           }
         }
         if (elError[0].objeto.tipo == 'T') {
           xcampodef += "datetime";
           if (elError[0].objeto.default != "") {
-            xcampodef += " DEFAULT " + elError[0].objeto.default;
+            xcampodef += " DEFAULT '" + elError[0].objeto.default + "'";
           }
         }
         if (elError[0].objeto.tipo == 'H') {
           xcampodef += "time";
           if (elError[0].objeto.default != "") {
-            xcampodef += " DEFAULT " + elError[0].objeto.default;
+            xcampodef += " DEFAULT '" + elError[0].objeto.default + "'";
           }
         }
         
@@ -1844,7 +2196,7 @@ export class Crud1ConvaloresComponent implements OnInit {
           this.showspinner.updateShowSpinner(false);
     
           const resp = this.global.mensaje("Campo Creado!", "Se ha creado el campo '" + elError[0].objeto.nombre + " en la tabla '" + pTabla + "'!", "I", "Aceptar", "");
-          resp.afterClosed().subscribe(async dlgResp => { 
+          resp.afterClosed().subscribe(async (dlgResp: any) => { 
 
             // Actualizar la lista de campos
             this.recuperarContenido();
@@ -1867,10 +2219,10 @@ export class Crud1ConvaloresComponent implements OnInit {
   // /////////////////// EL CAMPO ESTA EN LA DEFINICION Y NO EN LA TABLA -> ELIMINARLO /////////////////////////////////
   del2definicion(errid: string) {
     
-    let elError = this.pErrores.filter(e => e.id == errid)
+    let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid)
 
     const resp = this.global.mensaje("Atención!", "Quieres ELIMINAR la definición del campo '" + elError[0].objeto.nombre + "'?", "W", "Si, elimínalo", "No");
-    resp.afterClosed().subscribe(async dlgResp => {
+    resp.afterClosed().subscribe(async (dlgResp: boolean) => {
       if (dlgResp == true) {
       
         // Eliminar el campo a la definición
@@ -1909,7 +2261,272 @@ export class Crud1ConvaloresComponent implements OnInit {
     })
 
   }
+  // /////////////////// MODIFICAR EL CAMPO EN LA TABLA ////////////////////////////////////////////////////////////////
+  change2table(errid: string) {
 
+    let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid)
+    let pTabla = this.crud1Form.controls['tabla'].value;
+
+    const resp = this.global.mensaje("Atención!", "Quieres modificar el campo '" + elError[0].objeto.campo.nombre + "'?", "W", "Si, modifícalo", "No");
+    resp.afterClosed().subscribe(async (dlgResp: boolean) => {
+      if (dlgResp == true) {
+      
+        this.showspinner.updateShowSpinner(true);
+
+        let cadena: string = "";
+        let xcampodef = "";
+
+        if (elError[0].objeto.defCampo.tipo == 'K') {
+          xcampodef += "int(" + elError[0].objeto.defCampo.ancho + ") NULL";
+          if (elError[0].objeto.defCampo.default == "1") {
+            xcampodef += " DEFAULT '1'";
+          } else {
+            xcampodef += " DEFAULT '0'";
+          }
+        }
+        if (elError[0].objeto.defCampo.tipo == 'N' || elError[0].objeto.defCampo.tipo == 'M') {
+          xcampodef += "decimal(" + elError[0].objeto.defCampo.ancho + "," + elError[0].objeto.defCampo.decimales + ") NULL";
+          if (elError[0].objeto.defCampo.default && elError[0].objeto.defCampo.default != "") {
+            xcampodef += " DEFAULT " + elError[0].objeto.defCampo.default.replace(",",".");
+          } else {
+            xcampodef += " DEFAULT NULL";
+          }
+        }
+        if (elError[0].objeto.defCampo.tipo == 'C') {
+          xcampodef += "varchar(" + elError[0].objeto.defCampo.ancho + ") NULL";
+          if (elError[0].objeto.defCampo.default != "") {
+            xcampodef += " DEFAULT '" + elError[0].objeto.defCampo.default + "'";
+          }
+        }
+        if (elError[0].objeto.defCampo.tipo == 'A') {
+          xcampodef += "text NULL";
+        }
+        if (elError[0].objeto.defCampo.tipo == 'S') {
+          xcampodef += "timestamp DEFAULT CURRENT_TIMESTAMP";
+        }
+        if (elError[0].objeto.defCampo.tipo == 'D') {
+          xcampodef += "date";
+          if (elError[0].objeto.defCampo.default != "") {
+            xcampodef += " DEFAULT '" + elError[0].objeto.defCampo.default + "'";
+          }
+        }
+        if (elError[0].objeto.defCampo.tipo == 'T') {
+          xcampodef += "datetime";
+          if (elError[0].objeto.defCampo.default != "") {
+            xcampodef += " DEFAULT '" + elError[0].objeto.defCampo.default + "'";
+          }
+        }
+        if (elError[0].objeto.defCampo.tipo == 'H') {
+          xcampodef += "time";
+          if (elError[0].objeto.defCampo.default != "") {
+            xcampodef += " DEFAULT '" + elError[0].objeto.defCampo.default + "'";
+          }
+        }
+        
+        // // Cadena para agregar el campo (ALTER TABLE `pruebas1` ADD COLUMN `nuevacol` VARCHAR(45) NULL DEFAULT 'XX';
+        // cadena = "ALTER TABLE `" + pTabla + "` ADD COLUMN `";
+
+        // Cadena para corregir el campo (ALTER TABLE `pruebas` CHANGE `xxx` `xxxd` INT(10) NOT NULL;)
+        cadena = "ALTER TABLE `" + pTabla + "` CHANGE `" + elError[0].objeto.campo.nombre + "` `"; // + elError[0].objeto.campo.nombre + "` " + xcampodef + ";"
+
+        switch (elError[0].objeto.campo.nombre) {
+          case "clave": {
+            cadena += "clave` int(11) NOT NULL;";
+            // Cadena para crear la PK
+            cadena += "ALTER TABLE `" + pTabla + "` ADD PRIMARY KEY (`clave`);";
+            // Cadena para el AUTOINCREMENTAL
+            cadena += "ALTER TABLE `" + pTabla + "` MODIFY clave int(11) NOT NULL AUTO_INCREMENT;";
+            break;
+          }
+          case "id": {
+            cadena += "id` varchar(13) NULL DEFAULT NULL;"
+            break;
+          }       
+          case "created_at": {
+            cadena += "created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;";
+            break;
+          }  
+          case "updated_at": {
+            cadena += "updated_at` timestamp NULL DEFAULT NULL;";
+            break;
+          }
+          case "deleted_at": {
+            cadena += "deleted_at` timestamp NULL DEFAULT NULL;";
+            break;
+          }
+          case "deleted": {
+            cadena += "deleted` int(1) DEFAULT '0';";
+            break;
+          }
+          default: {
+            cadena += elError[0].objeto.campo.nombre + "` " + xcampodef + ";"
+          }
+        }
+        // EXECUTE 
+        
+        if(this.global.DEBUG)
+          console.log(elError, cadena);
+
+        this.dataaccess.execute(cadena,
+        async (respuesta: any, datos: any) => {
+
+        if (respuesta == 'OK') {
+  
+          if (this.global.DEBUG)
+            console.log("Respuesta del EXECUTE en front:", datos[0]);
+          
+          // Marcar el error como resuelto
+          elError[0].resuelto = true;
+          
+          this.showspinner.updateShowSpinner(false);
+    
+          const resp = this.global.mensaje("Campo modificado!", "Se ha modificado el campo '" + elError[0].objeto.campo.nombre + " en la tabla '" + pTabla + "'!", "I", "Aceptar", "");
+          resp.afterClosed().subscribe(async (dlgResp: any) => { 
+
+            // Actualizar la lista de campos
+            this.recuperarContenido();
+            this.goCompararEstructura();
+
+          });
+
+        } else {
+          this.showspinner.updateShowSpinner(false);
+        }
+  
+          })
+        
+      } // Fin de Si
+    })
+
+  }
+  // /////////////////// MODIFICAR LA DEFINION DEL CAMPO SEGUN LA TABLA ////////////////////////////////////////////////
+  change2definicion(errid: string) {
+
+    let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid)
+
+    const resp = this.global.mensaje("Atención!", "Quieres corregir la definición del campo '" + elError[0].objeto.campo.nombre + "'?", "W", "Si, corrígela", "No");
+    resp.afterClosed().subscribe(async (dlgResp: boolean) => {
+      if (dlgResp == true) {
+      
+        // Actualizar del campo a la definición
+
+        this.showspinner.updateShowSpinner(true);
+
+        let elError = this.pErrores.filter((e: { id: any; }) => e.id == errid)
+        let xtipo = "";
+        let xancho = 0;
+
+        if (elError[0].objeto.campo.tipo == "int") {
+          xtipo = "K";
+          xancho = elError[0].objeto.campo.nancho;
+        } else if (elError[0].objeto.campo.tipo == "decimal") {
+            xtipo = "N";
+            xancho = elError[0].objeto.campo.nancho;          
+        } else if (elError[0].objeto.campo.tipo == "varchar") {
+          xtipo = "C";
+          xancho = elError[0].objeto.campo.cancho;
+        } else if (elError[0].objeto.campo.tipo == "datetime") {
+          xtipo = "T";
+          xancho = elError[0].objeto.campo.cancho;
+        } else if (elError[0].objeto.campo.tipo == "date") {
+          xtipo = "D";
+          xancho = elError[0].objeto.campo.cancho;
+        } else if (elError[0].objeto.campo.tipo == "timestamp") {
+          xtipo = "S";
+          xancho = elError[0].objeto.campo.cancho;
+        } else if (elError[0].objeto.campo.tipo == "time") {
+          xtipo = "H";
+          xancho = elError[0].objeto.campo.cancho;
+        } else if (elError[0].objeto.campo.tipo == "text") {
+          xtipo = "A";
+          xancho = elError[0].objeto.campo.cancho;
+        }
+
+        let elId = elError[0].objeto.defCampo.id;
+
+        this.objetoCompleto.oTabla.oCampos.forEach((xcampo: { id: any; tipo: string; ancho: number; decimales: any; default: any; }) => {
+
+          if (xcampo.id == elId) {
+            xcampo.tipo = xtipo;
+            xcampo.ancho = xancho;
+            xcampo.decimales = elError[0].objeto.campo.decimales,
+              xcampo.default = elError[0].objeto.campo.valdefault
+          }
+
+        })
+
+        this.registroCompleto.objeto = JSON.stringify(this.objetoCompleto);
+
+        if (this.global.DEBUG)
+          console.log(this.objetoCompleto, this.registroCompleto);
+
+        await this.dataaccess.update(this.tabla, "", "id = '" + this.id + "'", ["objeto"], this.registroCompleto,
+        async (respuesta: any, datos: any) => {
+      
+          if (respuesta == 'OK') {
+      
+            if (this.global.DEBUG)
+              console.log(respuesta);
+            
+            // Actualizar la lista de campos
+            this.recuperarContenido();
+            this.goCompararEstructura();
+
+            this.showspinner.updateShowSpinner(false);
+
+          } else {
+            // Quitar el spinner y quedar en crud1
+            this.showspinner.updateShowSpinner(false);
+          }
+    
+        })        
+
+      } // Fin de Si
+    })
+
+  }
+
+  // ////////////////// COMPROBAR SI LA CONSULTA SQL ES VALIDA ////////////////////////////////////////////////////////
+  goComprobarQuery() {
+
+    const resp = this.global.mensaje("Pregunta!", "Quieres comprobar si la cadena SQL es válida?", "Q", "Si", "No");
+    resp.afterClosed().subscribe(async (dlgResp: boolean) => {
+      if (dlgResp == true) {
+      
+        this.showspinner.updateShowSpinner(true);
+
+        let pCadena = this.crud1Form.controls['cadenaSQL'].value;
+        let pFiltros = this.objetoCompleto.oQuery.oFiltros;
+
+        await this.sistema.comprobarSQL(pCadena, pFiltros,
+          async (respuesta: any, datos: any) => {
+          
+            if (respuesta == 'OK') {
+      
+              if (this.global.DEBUG)
+                console.log("Respuesta:", respuesta, datos);
+  
+              this.showspinner.updateShowSpinner(false);
+
+              let tipoMje = "O";
+              if (datos.success != 1) {
+                tipoMje = "E";
+              }
+              const resp = this.global.mensaje("Respuesta!", datos.message, tipoMje, "Aceptar", "");
+              resp.afterClosed().subscribe(async (dlgResp: boolean) => { })
+ 
+            } else {
+              // Quitar el spinner y quedar en crud1
+              this.showspinner.updateShowSpinner(false);
+            }
+      
+          })
+        
+      } // Fin del SI
+
+    })
+
+  }
 
 } // Fin del Export general
 

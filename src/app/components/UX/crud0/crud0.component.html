@@ -25,7 +25,7 @@
                   {{titulo.literal}}
                   <span *ngIf="titulo.ordenar && titulo.orden == 'down'" title="Z-A" (click)="setOrden(c)"><mat-icon class="inline-icon">arrow_downward</mat-icon></span>
                   <span *ngIf="titulo.ordenar && titulo.orden == 'up'" title="A-Z" (click)="setOrden(c)"><mat-icon class="inline-icon">arrow_upward</mat-icon></span>
-                  <span *ngIf="titulo.ordenar && titulo.orden == 'none'" title="No ordenar por esta columna" (click)="setOrden(c)"><mat-icon class="inline-icon">import_export</mat-icon></span>
+                  <span *ngIf="titulo.ordenar && titulo.orden == 'none'" title="No ordenado por esta columna" (click)="setOrden(c)"><mat-icon class="inline-icon">import_export</mat-icon></span>
               </th>
               <th *ngIf="borrar || editar" style="text-align: center;">Acciones</th>
           </thead>

@@ -22,14 +22,21 @@
       </mat-grid-tile>
 
       <div *ngFor="let field of campos; index as f">
+        
         <mat-grid-tile *ngIf="field.visible" class="form-row">
         
-          <mat-form-field appearance="outline">
+          <mat-form-field [class]="{'custom-mat-form-field' : field.formato != 'A', 'custom-textarea-mat-form-field' : field.formato == 'A'}" appearance="outline">
 
               <mat-label>{{field.etiqueta}}</mat-label>
 
               <!-- INPUT (texto) -->
-              <input *ngIf="field.campo != 'tabla'" type="textbox" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
+              <input *ngIf="field.campo != 'tabla' && field.formato == 'C'" type="textbox" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
+
+              <!-- INPUT (Numeros) -->
+              <input *ngIf="field.campo != 'tabla' && field.formato == 'N'" type="number" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
+
+              <!-- AREA DE TEXTO -->
+              <textarea *ngIf="field.campo!='tabla' && field.formato=='A'" class="custom-textarea" rows="3" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"></textarea>
 
               <!-- LISTA DE TABLAS DE LA BBDD -->
               <div *ngIf="field.campo == 'tabla'">
@@ -39,7 +46,7 @@
                       {{tbl.table_name}}
                   </mat-option>
                 </mat-autocomplete>
-            </div>
+              </div>
 
               <mat-error *ngIf="crud1Form.controls[field.campo].hasError('required')">Este dato es obligatorio!</mat-error>
               <mat-error *ngIf="crud1Form.controls[field.campo].hasError('maxlength')">Este dato no puede exceder de {{field.ancho}} caracteres!</mat-error>
@@ -104,7 +111,19 @@
                       <mat-icon *ngIf="err.add2table" class="inline-icon" style="color: green" title="Crear el campo en la tabla" (click)="add2table(err.id)">post_add</mat-icon>
                       <mat-icon *ngIf="err.add2table" class="inline-icon" style="color: red" title="Eliminar el campo de la definición" (click)="del2definicion(err.id)">delete_outline</mat-icon>
 
-                      
+                      <!-- EL CAMPO TIENE DIFERENCIAS ENGTRE LA DEFINICION Y LA TABLA -->
+                      <mat-icon *ngIf="
+                        err.diferencias != 0 && 
+                        err.objeto.campo.nombre != 'clave' &&
+                        err.objeto.campo.nombre != 'id' && 
+                        err.objeto.campo.nombre != 'deleted' &&
+                        err.objeto.campo.nombre != 'created_at' &&
+                        err.objeto.campo.nombre != 'updated_at' &&
+                        err.objeto.campo.nombre != 'deleted_at' &&
+                        err.objeto.campo.tipo != 'timestamp' && 
+                        err.objeto.campo.tipo != 'text'" class="inline-icon" style="color: blue" title="Ajustar el campo en la tabla" (click)="change2table(err.id)">file_download</mat-icon>
+                      <mat-icon *ngIf="err.diferencias != 0" class="inline-icon" style="color: blue" title="Corregir la definición" (click)="change2definicion(err.id)">file_upload</mat-icon>
+
                     </td>
                 </tr>
             </tbody>
@@ -151,12 +170,16 @@
 
   <mat-menu #toolsMenu="matMenu">
 
-    <button mat-menu-item [disabled]="!crud1Form.controls['tabla'] || !crud1Form.controls['tabla'].valid" (click)="goCompararEstructura()">
+    <button mat-menu-item *ngIf="crud1Form.controls['tabla'] && crud1Form.controls['tabla'].valid" (click)="goCompararEstructura()">
       <span>Comparar definici&oacute;n con BBDD</span>
     </button>
 
-    <button mat-menu-item [disabled]="!crud1Form.controls['tabla'] || !crud1Form.controls['tabla'].valid" (click)="goRecuperarDefinicion()">
+    <button mat-menu-item *ngIf="crud1Form.controls['tabla'] && crud1Form.controls['tabla'].valid" (click)="goRecuperarDefinicion()">
       <span>Recuperar una definici&oacute;n desde BBDD</span>
+    </button>
+  
+    <button mat-menu-item *ngIf="tipo == 'Q'" (click)="goComprobarQuery()">
+      <span>Comprobar la consulta</span>
     </button>
   
 

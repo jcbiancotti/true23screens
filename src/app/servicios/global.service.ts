@@ -115,7 +115,7 @@ export class Funciones {
     { codigo: "C", texto: "Caracteres" },
     { codigo: "N", texto: "Númerico" },
     { codigo: "M", texto: "Moneda" },
-    { codigo: "K", texto: "Si/No" },
+    { codigo: "K", texto: "Número entero" },
     { codigo: "D", texto: "Fecha" },
     { codigo: "T", texto: "Fecha y hora" },
     { codigo: "H", texto: "Hora" },

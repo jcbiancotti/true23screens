@@ -45,6 +45,7 @@ import { ScrCrud0sComponent } from './components/vistas/scr-crud0s/scr-crud0s.co
 import { ScrCrud1sComponent } from './components/vistas/scr-crud1s/scr-crud1s.component';
 import { ScrListadoComponent } from './components/vistas/scr-listado/scr-listado.component';
 import { MdTablaCampoComponent } from './components/vistas/md-tabla-campo/md-tabla-campo.component';
+import { MdConsultasqlFiltroComponent } from './components/vistas/md-consultasql-filtro/md-consultasql-filtro.component';
 
 @NgModule({
   declarations: [
@@ -85,7 +86,8 @@ import { MdTablaCampoComponent } from './components/vistas/md-tabla-campo/md-tab
     ScrCrud0sComponent,
     ScrCrud1sComponent,
     ScrListadoComponent,
-    MdTablaCampoComponent
+    MdTablaCampoComponent,
+    MdConsultasqlFiltroComponent
   ],
   imports: [
     MaterialModule,

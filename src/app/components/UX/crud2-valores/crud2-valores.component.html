@@ -22,13 +22,14 @@
       <div *ngFor="let field of crud2Campos; index as f">
         <mat-grid-tile *ngIf="field.visible" class="form-row">
         
-          <mat-form-field appearance="outline">
+          <mat-form-field *ngIf="field.formato != 'B'" appearance="outline" class="custom-mat-form-field">
 
             <mat-label>{{field.etiqueta}}</mat-label>
 
             <!-- INPUT (texto) -->
             <input *ngIf="field.formato == 'C'" type="textbox" formControlName="{{field.id}}" matInput maxlength="{{field.ancho}}"> 
-            <input *ngIf="field.formato == 'N'" type="number" formControlName="{{field.id}}" matInput maxlength="{{field.ancho}}"> 
+            <input *ngIf="field.formato == 'N'" type="number" formControlName="{{field.id}}" matInput maxlength="{{field.ancho}}" min="0"> 
+        
             <div *ngIf="field.formato == 'L'">
               <mat-select formControlName="{{field.id}}" (selectionChange)="cambiarValores($event.value)">
                 <mat-option *ngFor="let tc of tiposCampo" [value]="tc.codigo">
@@ -42,6 +43,7 @@
             <mat-error *ngIf="crud2Form.controls[field.id].hasError('email')">El correo electrónico no tiene un formato correcto!</mat-error>
 
           </mat-form-field>
+          <mat-checkbox *ngIf="field.formato == 'B'" color="primary" formControlName="{{field.id}}">{{field.etiqueta}}</mat-checkbox>
 
         </mat-grid-tile>
       </div>

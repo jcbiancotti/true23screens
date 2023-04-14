@@ -11,7 +11,7 @@
               <mat-grid-list cols="1" rowHeight="90px">
                   <mat-grid-tile>
 
-                      <mat-form-field appearance="outline">
+                      <mat-form-field appearance="outline" class="custom-mat-form-field">
                           <mat-label>Correo electr&oacute;nico</mat-label>
                           <input type="email" #ref_email formControlName="usrCorreo" matInput placeholder="ejemplo@correo.com" (focus)="error=''">
                           <mat-icon matSuffix>email</mat-icon>
@@ -22,7 +22,7 @@
                       </mat-form-field>
                   </mat-grid-tile>
                   <mat-grid-tile>
-                      <mat-form-field appearance="outline">
+                      <mat-form-field appearance="outline" class="custom-mat-form-field">
                           <mat-label>Contrase&ntilde;a</mat-label>
                           <input [type]="viewpass ? 'text' : 'password'" formControlName="usrClave" matInput (focus)="error=''">
                           <mat-icon class="button-icon" matSuffix *ngIf="viewpass == false" (click)="viewpass=!viewpass">visibility</mat-icon>
