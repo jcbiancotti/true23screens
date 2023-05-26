@@ -12,12 +12,12 @@ import { Funciones, GlobalService, spinnerstatus } from 'src/app/servicios/globa
 export class Crud0Component implements OnInit  {
 
   @Input() crud0id: string = "";
-  @Input() tipo: string = "";
   @Input() rutaAdd: string = "";
+  @Input() pantalladefQuery: string = "";
+  @Input() campos: any[] = [];
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   
-  campos: any[] = [];
   colTitulos: any[] = [];
   colCampos: any[] = [];
   nuevo: boolean = true;
@@ -25,7 +25,6 @@ export class Crud0Component implements OnInit  {
   borrar: boolean = true;
   listar: boolean = true;
   pantallaCrud1: string = "/";
-  pantalladefQuery: string = "";
   pantallaListado: string = "";
 
   hayDatos: boolean = false;
@@ -72,45 +71,11 @@ export class Crud0Component implements OnInit  {
   
   async recuperarDatosCrud() {
   
-    this.campos = [
-      {
-        titulo: "ID",
-        ordenar: true,
-        campo: "id"
-      },
-      {
-        titulo: "Descripcion",
-        ordenar: true,
-        campo: "descripcion"
-      }
-    ];
     this.nuevo = true;
     this.editar = true;
     this.listar = false;
 
     this.pantallaCrud1 = this.rutaAdd;
-    switch (this.tipo) {
-      case 'L': {
-        this.pantalladefQuery = '62f66176bd8xL';  // ID de la consulta SQL de Listas de valores
-        break;
-      }
-      case 'T': {
-        this.pantalladefQuery = '62f66176bd8xT';  // ID de la consulta SQL de Tablas
-        break;
-      }        
-      case 'Q': {
-        this.pantalladefQuery = '62f66176bd8xQ';  // ID de la consulta SQL de Consultas SQL
-        break;
-      }
-      case 'I': {
-        this.pantalladefQuery = '62f66176bd8xI';  // ID de la consulta SQL de Listas seleccionables
-        break;
-      }        
-      default: {
-        this.pantalladefQuery = ''; 
-        break; 
-     }       
-    }
 
     let xlocalCampoOrden: string | null = localStorage.getItem(this.crud0id + "-orden");
     let xlocalSentido: string | null = localStorage.getItem(this.crud0id + "-sentido");

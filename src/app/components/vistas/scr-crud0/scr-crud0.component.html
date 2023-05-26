@@ -1,10 +1,19 @@
 <div class="true-page">
 
-  <mat-card-title><h1>Tablas de gestión (CRUD 0)</h1></mat-card-title>
+  <mat-card-title><h1>Datos de la Tabla de gestión (CRUD 0)</h1></mat-card-title>
 
   <mat-card-content>
 
-
+    <app-crud1-convalores
+      id = "{{id}}"
+      tipo = "G"
+      rutaCrud2 = "{{rutaCrud2}}"
+      rutaRetorno = "{{rutaRetorno}}"
+      [campos] = "camposCrud1"
+      [colTitulos] = "columnasValores"
+      tabla = "{{tabla}}"
+    ></app-crud1-convalores>
+  
   </mat-card-content>
-
+  
 </div>

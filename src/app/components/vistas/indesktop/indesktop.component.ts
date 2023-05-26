@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
+
 @Component({
   selector: 'app-indesktop',
   templateUrl: './indesktop.component.html',
@@ -7,9 +8,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class IndesktopComponent implements OnInit {
 
+
   constructor() { }
 
   ngOnInit(): void {
+
   }
+
+
+
+
 
 }

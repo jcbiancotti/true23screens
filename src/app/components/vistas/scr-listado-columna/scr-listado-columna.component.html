@@ -1,0 +1,18 @@
+<div class="true-page">
+
+  <mat-card-title><h1>Columna del listado</h1></mat-card-title>
+
+  <mat-card-content>
+
+      <app-crud2-valores
+          id = "{{id}}"
+          idvalor = "{{idvalor}}"
+          tipo = "R"
+          tabla = "sys_screens"
+          [crud2Campos] = "crud2Campos"
+          rutaRetorno = "{{rutaRetorno}}"
+      ></app-crud2-valores>
+
+  </mat-card-content>
+
+</div>

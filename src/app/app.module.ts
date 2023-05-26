@@ -20,7 +20,6 @@ import { MenuComponent } from './components/UX/menu/menu.component';
 import { SpinnerComponent } from './components/UX/spinner/spinner.component';
 import { SubmenuComponent } from './components/UX/submenu/submenu.component';
 import { UsrcardComponent } from './components/UX/usrcard/usrcard.component';
-import { OrqOpcionemenuComponent } from './components/vistas/orq-opcionemenu/orq-opcionemenu.component';
 import { OrqRolesComponent } from './components/vistas/orq-roles/orq-roles.component';
 import { MdListavaloresComponent } from './components/vistas/md-listavalores/md-listavalores.component';
 import { MdTablasComponent } from './components/vistas/md-tablas/md-tablas.component';
@@ -46,6 +45,15 @@ import { ScrCrud1sComponent } from './components/vistas/scr-crud1s/scr-crud1s.co
 import { ScrListadoComponent } from './components/vistas/scr-listado/scr-listado.component';
 import { MdTablaCampoComponent } from './components/vistas/md-tabla-campo/md-tabla-campo.component';
 import { MdConsultasqlFiltroComponent } from './components/vistas/md-consultasql-filtro/md-consultasql-filtro.component';
+import { ScrCrud0ColumnaComponent } from './components/vistas/scr-crud0-columna/scr-crud0-columna.component';
+import { ScrCrud1ColumnaComponent } from './components/vistas/scr-crud1-columna/scr-crud1-columna.component';
+import { OrqRolComponent } from './components/vistas/orq-rol/orq-rol.component';
+import { OrqOpcionesmenuComponent } from './components/vistas/orq-opcionesmenu/orq-opcionesmenu.component';
+import { OrqOpcionmenuComponent } from './components/vistas/orq-opcionmenu/orq-opcionmenu.component';
+import { Crud1CliComponent } from './components/UX/crud1-cli/crud1-cli.component';
+import { LopdComponent } from './components/vistas/lopd/lopd.component';
+import { ButtonlistComponent } from './components/UX/buttonlist/buttonlist.component';
+import { ScrListadoColumnaComponent } from './components/vistas/scr-listado-columna/scr-listado-columna.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +70,7 @@ import { MdConsultasqlFiltroComponent } from './components/vistas/md-consultasql
     SpinnerComponent,
     SubmenuComponent,
     UsrcardComponent,
-    OrqOpcionemenuComponent,
+    OrqOpcionesmenuComponent,
     OrqRolesComponent,
     MdListavaloresComponent,
     MdTablasComponent,
@@ -87,7 +95,15 @@ import { MdConsultasqlFiltroComponent } from './components/vistas/md-consultasql
     ScrCrud1sComponent,
     ScrListadoComponent,
     MdTablaCampoComponent,
-    MdConsultasqlFiltroComponent
+    MdConsultasqlFiltroComponent,
+    ScrCrud0ColumnaComponent,
+    ScrCrud1ColumnaComponent,
+    OrqRolComponent,
+    OrqOpcionmenuComponent,
+    Crud1CliComponent,
+    LopdComponent,
+    ButtonlistComponent,
+    ScrListadoColumnaComponent
   ],
   imports: [
     MaterialModule,

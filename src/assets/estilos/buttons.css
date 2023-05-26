@@ -22,3 +22,27 @@
     color: red !important;
 }
 
+.buttonListContainer {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    height: 100% !important;
+    max-width: 460px;
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-items: top !important;
+
+}
+
+.btnList {
+    text-transform: none;
+    border: 2px solid var(--true-bg-general);
+    font-size: 8pt;
+    height: auto;
+    width: auto;
+    border-radius: 35px;
+    padding-top: 2px;
+    padding-bottom: 0;
+    padding-left: 10px;
+    padding-right: 10px; 
+}

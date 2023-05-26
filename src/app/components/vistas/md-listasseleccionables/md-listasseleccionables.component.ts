@@ -9,18 +9,22 @@ import { GlobalService, Funciones } from 'src/app/servicios/global.service';
 })
 export class MdListasseleccionablesComponent implements OnInit {
 
-  tipo: string = 'I';
-  rutaAdd: string = '';
-
-  constructor(
-    private global: GlobalService,    
-    private funciones: Funciones,
-    private route: ActivatedRoute,
-  ) {
-
-    this.rutaAdd = '/listaseleccionable';
-
-  }
+  rutaAdd: string = '/listaseleccionable';
+  listaQuery: string = "62f66176bd8xI";
+  campos: any[] = [
+    {
+      titulo: "ID",
+      ordenar: true,
+      campo: "id"
+    },
+    {
+      titulo: "Descripcion",
+      ordenar: true,
+      campo: "descripcion"
+    }
+  ];
+  constructor() { }
+  
   ngOnInit(): void {}
 
 }

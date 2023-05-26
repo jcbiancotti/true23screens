@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { GlobalService, Funciones } from 'src/app/servicios/global.service';
 
 @Component({
   selector: 'app-scr-crud1s',
@@ -7,9 +9,23 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ScrCrud1sComponent implements OnInit {
 
-  constructor() { }
-
-  ngOnInit(): void {
-  }
+  rutaAdd: string = "/edicionregistro";
+  listaQuery: string = "643d6c7c1b6c9";
+  campos: any[] = [
+    {
+      titulo: "ID",
+      ordenar: true,
+      campo: "id"
+    },
+    {
+      titulo: "Descripcion",
+      ordenar: true,
+      campo: "descripcion"
+    }
+  ];
+  
+  constructor() {}
+  
+  ngOnInit(): void {}
 
 }

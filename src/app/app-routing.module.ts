@@ -8,7 +8,7 @@ import { GuardInGuard } from './servicios/guard-in.guard';
 import { LoginComponent } from './components/auth/login/login.component';
 import { LogoutComponent } from './components/auth/logout/logout.component';
 import { IndesktopComponent } from './components/vistas/indesktop/indesktop.component';
-import { OrqOpcionemenuComponent } from './components/vistas/orq-opcionemenu/orq-opcionemenu.component';
+import { OrqOpcionesmenuComponent } from './components/vistas/orq-opcionesmenu/orq-opcionesmenu.component';
 import { OrqRolesComponent } from './components/vistas/orq-roles/orq-roles.component';
 import { MdListavaloresComponent } from './components/vistas/md-listavalores/md-listavalores.component';
 import { MdTablasComponent } from './components/vistas/md-tablas/md-tablas.component';
@@ -30,12 +30,20 @@ import { ScrCrud1sComponent } from './components/vistas/scr-crud1s/scr-crud1s.co
 import { ScrListadoComponent } from './components/vistas/scr-listado/scr-listado.component';
 import { MdTablaCampoComponent } from './components/vistas/md-tabla-campo/md-tabla-campo.component';
 import { MdConsultasqlFiltroComponent } from './components/vistas/md-consultasql-filtro/md-consultasql-filtro.component';
+import { ScrCrud0ColumnaComponent } from './components/vistas/scr-crud0-columna/scr-crud0-columna.component';
+import { ScrCrud1ColumnaComponent } from './components/vistas/scr-crud1-columna/scr-crud1-columna.component';
+import { OrqRolComponent } from './components/vistas/orq-rol/orq-rol.component';
+import { OrqOpcionmenuComponent } from './components/vistas/orq-opcionmenu/orq-opcionmenu.component';
+import { LopdComponent } from './components/vistas/lopd/lopd.component';
+import { ScrListadoColumnaComponent } from './components/vistas/scr-listado-columna/scr-listado-columna.component';
 
 
 const routes: Routes = [
   // SIEMPRE
   { path: '', redirectTo: '/in', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent, canActivate: [GuardOutGuard]},    // LLamada al GuarOut para que verifique si está logged
+  { path: 'home', component: HomeComponent, canActivate: [GuardOutGuard] },    // LLamada al GuarOut para que verifique si está logged
+  { path: 'lopd', component: LopdComponent},
+  
   // SOLO DESDE FUERA DE LA APP
   { path: 'login', component: LoginComponent, canActivate: [GuardOutGuard]},
   { 
@@ -43,8 +51,14 @@ const routes: Routes = [
       { path: '', component: IndesktopComponent, canActivate: [GuardInGuard]},   
       { path: 'logout', component: LogoutComponent, canActivate: [GuardInGuard] },  
       // ORQUESTADOR
-      { path: 'opcionesmenu', component: OrqOpcionemenuComponent, canActivate: [GuardInGuard]},  
-      { path: 'roles', component: OrqRolesComponent, canActivate: [GuardInGuard]},  
+      { path: 'opcionesmenu', component: OrqOpcionesmenuComponent, canActivate: [GuardInGuard] },  
+      { path: 'opcionmenu', component: OrqOpcionmenuComponent, canActivate: [GuardInGuard] },  
+      { path: 'opcionmenu/:id', component: OrqOpcionmenuComponent, canActivate: [GuardInGuard] },  
+      
+      { path: 'roles', component: OrqRolesComponent, canActivate: [GuardInGuard] },  
+      { path: 'rol', component: OrqRolComponent, canActivate: [GuardInGuard] },  
+      { path: 'rol/:id', component: OrqRolComponent, canActivate: [GuardInGuard] },  
+      
       // ORIGENES DE DATOS
       { path: 'listasdevalores', component: MdListavaloresComponent, canActivate: [GuardInGuard]},  
       { path: 'listadevalor', component: MdListavalorComponent, canActivate: [GuardInGuard]},  
@@ -72,15 +86,21 @@ const routes: Routes = [
       { path: 'tablasdegestion', component: ScrCrud0sComponent, canActivate: [GuardInGuard]},  
       { path: 'tabladegestion', component: ScrCrud0Component, canActivate: [GuardInGuard]},  
       { path: 'tabladegestion/:id', component: ScrCrud0Component, canActivate: [GuardInGuard]},  
-
+      { path: 'tabladegestioncolumna/:id', component: ScrCrud0ColumnaComponent, canActivate: [GuardInGuard]},  
+      { path: 'tabladegestioncolumna/:id/:idvalor', component: ScrCrud0ColumnaComponent, canActivate: [GuardInGuard] }, 
+      
       { path: 'edicionesregistros', component: ScrCrud1sComponent, canActivate: [GuardInGuard] },  
       { path: 'edicionregistro', component: ScrCrud1Component, canActivate: [GuardInGuard] },  
       { path: 'edicionregistro/:id', component: ScrCrud1Component, canActivate: [GuardInGuard] },  
-
+      { path: 'edicionregistrocolumna/:id', component: ScrCrud1ColumnaComponent, canActivate: [GuardInGuard]},  
+      { path: 'edicionregistrocolumna/:id/:idvalor', component: ScrCrud1ColumnaComponent, canActivate: [GuardInGuard] }, 
+      
       { path: 'listados', component: ScrListadosComponent, canActivate: [GuardInGuard]},  
       { path: 'listado', component: ScrListadoComponent, canActivate: [GuardInGuard]},  
       { path: 'listado/:id', component: ScrListadoComponent, canActivate: [GuardInGuard] },  
-      
+      { path: 'listadocolumna/:id', component: ScrListadoColumnaComponent, canActivate: [GuardInGuard]},  
+      { path: 'listadocolumna/:id/:idvalor', component: ScrListadoColumnaComponent, canActivate: [GuardInGuard] }, 
+          
       { path: 'capturas', component: ScrCapturadatosComponent, canActivate: [GuardInGuard]},  
       { path: 'buscadores', component: ScrBuscadorComponent, canActivate: [GuardInGuard]},  
       { path: 'selectores', component: ScrSelectorComponent, canActivate: [GuardInGuard]},  

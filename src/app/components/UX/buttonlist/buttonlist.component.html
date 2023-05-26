@@ -1,0 +1,50 @@
+<!-- <p> -->
+  {{etiqueta}}
+<!-- </p> -->
+
+<div *ngIf="opciones" class="buttonListContainer">
+  <span *ngFor="let boton of opciones; index as o" class="btnList">
+    {{boton.descripcion}}
+    <mat-icon *ngIf="adding == false" class="inline-icon" (click)="quitarItem(boton.id)">clear</mat-icon>
+  </span>
+</div>
+
+<button *ngIf="adding == false" mat-raised-button color="primary" (click)="adding = !adding; cargaAddQuery()">
+  <mat-icon class="inline-icon">add</mat-icon>
+  A&ntilde;adir
+</button>
+
+<div *ngIf="adding == true">
+
+  <form [formGroup]="buttonListForm">
+
+    <mat-grid-list cols="1" rowHeight="3rem">
+      <mat-grid-tile  [rowspan]="2">
+
+        <mat-form-field appearance="outline" class="custom-mat-form-field">
+        
+          <mat-select formControlName="nuevoJitem" placeholder="Selecciona el nuevo item ... "> 
+            <mat-option *ngFor="let opc of localLista" [value]="opc.id">
+                {{opc.texto}}
+            </mat-option>
+          </mat-select>
+
+        </mat-form-field>
+
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="1">
+
+        <button type="button" *ngIf="adding == true" mat-raised-button color="primary" style="margin-bottom: 10px;" [disabled]="!this.buttonListForm.controls['nuevoJitem'].valid"  (click)="adding = !adding; agregarItem(buttonListForm.controls['nuevoJitem'].value)">
+          <mat-icon class="inline-icon">done</mat-icon>
+        </button>
+        <button type="button" *ngIf="adding == true" mat-raised-button color="accent" style="margin-bottom: 10px;margin-left: 15px;" (click)="adding = !adding">
+          <mat-icon class="inline-icon">close</mat-icon>
+        </button>
+
+      </mat-grid-tile>
+    </mat-grid-list>
+
+  </form>
+
+</div>
+

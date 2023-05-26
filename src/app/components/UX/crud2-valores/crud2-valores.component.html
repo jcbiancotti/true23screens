@@ -3,52 +3,58 @@
 
 <!-- FORMULARIO -->
 <form [formGroup]="crud2Form">
-    
-    <mat-grid-list cols="1" rowHeight="90px">
+  
+  <mat-grid-list cols="1"  rowHeight="2rem">
 
-      <!-- ENCABEZADO Y BOTONES -->
-      <mat-grid-tile>
-          <div class="submenuCRUD">
-              <div>
-                  <button mat-button (click)="back()" style="color: gray;"><mat-icon>arrow_back</mat-icon> Volver</button>
-              </div>
-              <div class="spacer"></div>
-              <div>
-                  <button color="primary" mat-raised-button (click)="save()" [disabled]="!crud2Form.valid" title="Grabar los cambios"><mat-icon>save_outline</mat-icon> Guardar</button>
-              </div>
+    <!-- ENCABEZADO Y BOTONES -->
+    <mat-grid-tile [rowspan]="3">
+        <div class="submenuCRUD">
+            <div>
+                <button mat-button (click)="back()" style="color: gray;"><mat-icon>arrow_back</mat-icon> Volver</button>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <button color="primary" mat-raised-button (click)="save()" [disabled]="!crud2Form.valid" title="Grabar los cambios"><mat-icon>save_outline</mat-icon> Guardar</button>
+            </div>
+        </div>
+    </mat-grid-tile>
+
+    <div *ngFor="let field of crud2Campos; index as f">
+      <mat-grid-tile *ngIf="field.formato != 'B' && field.visible == true" class="form-row" [rowspan]="3">
+      
+        <mat-form-field appearance="outline" class="custom-mat-form-field">
+
+          <mat-label>{{field.etiqueta}}</mat-label>
+
+          <!-- INPUT (texto) -->
+          <input *ngIf="field.formato == 'C'" type="textbox" formControlName="{{field.id}}" matInput maxlength="{{field.ancho}}"> 
+          <input *ngIf="field.formato == 'N'" type="number" formControlName="{{field.id}}" matInput maxlength="{{field.ancho}}" min="0"> 
+      
+          <div *ngIf="field.formato == 'L'">
+            <mat-select formControlName="{{field.campo}}" (selectionChange)="ponerIds(field.campo, $event)"> 
+              <mat-option *ngFor="let opc of field.lista" [value]="opc.texto">
+                  {{opc.texto}}
+              </mat-option>
+            </mat-select>
           </div>
+
+          <mat-error *ngIf="crud2Form.controls[field.campo].hasError('required')">Este dato es obligatorio!</mat-error>
+          <mat-error *ngIf="crud2Form.controls[field.campo].hasError('maxlength')">Este dato no puede exceder de {{field.ancho}} caracteres!</mat-error>
+          <mat-error *ngIf="crud2Form.controls[field.campo].hasError('email')">El correo electrónico no tiene un formato correcto!</mat-error>
+
+        </mat-form-field>
+
       </mat-grid-tile>
 
-      <div *ngFor="let field of crud2Campos; index as f">
-        <mat-grid-tile *ngIf="field.visible" class="form-row">
-        
-          <mat-form-field *ngIf="field.formato != 'B'" appearance="outline" class="custom-mat-form-field">
+      <!-- CHECKBOXES -->
+      <mat-grid-tile *ngIf="field.formato == 'B' && field.visible == true" [rowspan]="1">
+        <div class="form-checkbox">
+          <mat-checkbox color="primary" formControlName="{{field.id}}">{{field.etiqueta}}</mat-checkbox>
+        </div>
+      </mat-grid-tile>
 
-            <mat-label>{{field.etiqueta}}</mat-label>
+    </div>
 
-            <!-- INPUT (texto) -->
-            <input *ngIf="field.formato == 'C'" type="textbox" formControlName="{{field.id}}" matInput maxlength="{{field.ancho}}"> 
-            <input *ngIf="field.formato == 'N'" type="number" formControlName="{{field.id}}" matInput maxlength="{{field.ancho}}" min="0"> 
-        
-            <div *ngIf="field.formato == 'L'">
-              <mat-select formControlName="{{field.id}}" (selectionChange)="cambiarValores($event.value)">
-                <mat-option *ngFor="let tc of tiposCampo" [value]="tc.codigo">
-                    {{tc.texto}}
-                </mat-option>
-              </mat-select>                  
-            </div>
-
-            <mat-error *ngIf="crud2Form.controls[field.id].hasError('required')">Este dato es obligatorio!</mat-error>
-            <mat-error *ngIf="crud2Form.controls[field.id].hasError('maxlength')">Este dato no puede exceder de {{field.ancho}} caracteres!</mat-error>
-            <mat-error *ngIf="crud2Form.controls[field.id].hasError('email')">El correo electrónico no tiene un formato correcto!</mat-error>
-
-          </mat-form-field>
-          <mat-checkbox *ngIf="field.formato == 'B'" color="primary" formControlName="{{field.id}}">{{field.etiqueta}}</mat-checkbox>
-
-        </mat-grid-tile>
-      </div>
-
-
-    </mat-grid-list>
+  </mat-grid-list>
 
 </form>

@@ -17,18 +17,19 @@ export class Crud1ConvaloresComponent implements OnInit {
   @Input() tipo: string = "";
   @Input() rutaCrud2: string = "";
   @Input() rutaRetorno: string = "";
+  @Input() campos: any[] = [];
+  @Input() colTitulos: any[] = [];
+  @Input() tabla: string = "";
+    
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  
+    
   extraTitulo: string = "";
   nuevo: boolean = true;
   hayDatos: boolean = false;
   showDiferencias: boolean = false;
 
   label_agregar: string = '';
-
-  tabla: string = '';
-  campos: any[] = [];
-  colTitulos: any[] = [];
+  
   agregar: boolean = true;
   editar: boolean = true;
   borrar: boolean = true;
@@ -43,9 +44,18 @@ export class Crud1ConvaloresComponent implements OnInit {
   objetoCompleto: any;
   tiposCampo: any[] = [];
 
-
-  tablasBBDD: any[] = [];
+  tablasBBDD: any[] = [];       // Tablas con el nombre físico
   opc_tablasBBDD: any[] = [];
+
+  lPantallas: any[] = [];
+  lEntDatos: any[] = [];        // Entidades de datos definidas en sys_modelo_datos
+  lListasVal: any[] = [];       // Entidades de datos definidas en sys_modelo_datos
+  lSelectables: any[] = [];     // Entidades de datos definidas en sys_modelo_datos
+  lOrientaciones: any[] = [{ id: "V", nombre: "Vertical" }, { id: "L", nombre: "Apaisada" }];
+
+  opc_Lista: any[] = [];
+  laQ: any = { id: "", nombre: "" };
+  laP: any = { id: "", nombre: "" };
 
   // Paginator
   length = 0;
@@ -71,7 +81,7 @@ export class Crud1ConvaloresComponent implements OnInit {
 
   ) {}
 
-  ngOnInit(): void { 
+  async ngOnInit(): Promise<void> { 
 
     if(!this.id) {
       this.nuevo = true;
@@ -81,29 +91,30 @@ export class Crud1ConvaloresComponent implements OnInit {
       this.nuevo = false;
     }
   
+    // Cargar definición de la pantalla y el registro a editar
     this.crud1Form = new FormGroup({});
+    await this.recuperarDatosCrud1();
 
-    setTimeout(() => {
-
-      // PONER SPINNER
-      this.showspinner.updateShowSpinner(true);
-
-      // Cargar definición de la pantalla y el registro a editar
-      if (!this.nuevo) {
-        this.cargarRegistro();
-      } else {
-        this.recuperarDatosCrud1();
-      } 
-      this.showspinner.updateShowSpinner(false);
-    })
+    if (!this.nuevo) {
+      await this.cargarRegistro();
+    } else {
+      await this.ListaDeEntidadesDatos("T");
+      await this.ListaDeEntidadesDatos("Q");
+      await this.ListaDePantallas();
+    }
 
   }
   
   async cargarRegistro() {
 
-    await this.recuperarDatosCrud1();
+    let tmpCampos: string[] = [];
 
-    let tmpCampos = ["id", "tipo", "descripcion", "entorno", "objeto"];
+    if (this.tabla == "sys_modelo_datos") {
+      tmpCampos = ["id", "tipo", "descripcion", "objeto"];
+    }
+    if (this.tabla == "sys_screens") {
+      tmpCampos = ["id", "tipo", "titulo as descripcion", "objeto"];
+    }
 
     await this.dataaccess.read(this.tabla, "", "id = '" + this.id + "'", tmpCampos,
     async (respuesta: any, datos: any) => {
@@ -116,7 +127,11 @@ export class Crud1ConvaloresComponent implements OnInit {
         this.registroCompleto = datos[0];
         this.objetoCompleto = JSON.parse(this.registroCompleto.objeto.replace(/&quot;/g, '"').replace(/\t/g, '').replace(/\n/g, ''));
 
+        if(this.global.DEBUG)
+          console.log("OBJETO COMPLETO", this.registroCompleto, this.objetoCompleto);
+
         switch (this.tipo) {
+          // Orígenes de datos
           case 'L': {
             this.crud1Form.controls["descripcion"].patchValue(datos[0]['descripcion']);
             break;
@@ -131,6 +146,39 @@ export class Crud1ConvaloresComponent implements OnInit {
             this.crud1Form.controls["cadenaSQL"].patchValue(this.objetoCompleto.oQuery.cadenaSQL);
             break;
           }
+          // Definiciones de pantallas
+          case 'G': {
+            this.crud1Form.controls["descripcion"].patchValue(datos[0]['descripcion']);
+            this.crud1Form.controls["titulo"].patchValue(this.objetoCompleto.oDisenio.titulo);
+            this.crud1Form.controls["subtitulo"].patchValue(this.objetoCompleto.oDisenio.subtitulo);
+            this.crud1Form.controls["idQuery"].patchValue(this.objetoCompleto.oTablaGestiones.idQuery);
+            this.crud1Form.controls["rowAgregar"].patchValue(this.objetoCompleto.oTablaGestiones.Row_Agregar);
+            this.crud1Form.controls["rowEditar"].patchValue(this.objetoCompleto.oTablaGestiones.Row_Editar);
+            this.crud1Form.controls["rowListar"].patchValue(this.objetoCompleto.oTablaGestiones.Row_Listar);
+            this.crud1Form.controls["pantallaAdd"].patchValue(this.objetoCompleto.oTablaGestiones.PantallaAdd);
+            this.crud1Form.controls["pantallaEdit"].patchValue(this.objetoCompleto.oTablaGestiones.PantallaEdit);
+            this.crud1Form.controls["pantallaList"].patchValue(this.objetoCompleto.oTablaGestiones.PantallaList);
+            break;
+          }
+          case 'C': {
+
+            await this.ListaDeEntidadesDatos("L");
+            await this.ListaDeEntidadesDatos("I");
+            
+            this.crud1Form.controls["descripcion"].patchValue(datos[0]['descripcion']);
+            this.crud1Form.controls["titulo"].patchValue(this.objetoCompleto.oDisenio.titulo);
+            this.crud1Form.controls["subtitulo"].patchValue(this.objetoCompleto.oDisenio.subtitulo);
+            this.crud1Form.controls["tabla"].patchValue(this.objetoCompleto.oCRUD01.tabla);
+            break;
+          }
+          case 'R': {
+            this.crud1Form.controls["descripcion"].patchValue(datos[0]['descripcion']);
+            this.crud1Form.controls["titulo"].patchValue(this.objetoCompleto.oDisenio.titulo);
+            this.crud1Form.controls["subtitulo"].patchValue(this.objetoCompleto.oDisenio.subtitulo);
+            this.crud1Form.controls["idQuery"].patchValue(this.objetoCompleto.oListado.idQuery);
+            this.crud1Form.controls["orientacion"].patchValue(this.objetoCompleto.oListado.orientacion);
+            break;
+          } 
         }
 
         this.pErrores = [];
@@ -139,10 +187,18 @@ export class Crud1ConvaloresComponent implements OnInit {
         this.recuperarContenido();
         this.extraTitulo = "Código: " + this.id;
 
-        this.showspinner.updateShowSpinner(false);
+        if (this.tipo == "I" || this.tipo == "G" || this.tipo == "R") {
+          this.ListaDeEntidadesDatos("Q");
+        }
+        if (this.tipo == "G") {
+          this.ListaDePantallas();
+        }
+        if (this.tipo == "C") {
+          this.ListaDeEntidadesDatos("T");
+        }
 
       } else {
-        this.showspinner.updateShowSpinner(false);
+        // this.showspinner.updateShowSpinner(false);
       }
 
     })
@@ -154,198 +210,43 @@ export class Crud1ConvaloresComponent implements OnInit {
     if(this.global.DEBUG)
       console.log("Definición datos CRUD1", this.id);
 
-    this.tabla = "sys_modelo_datos";
     this.agregar = true;
     this.editar = true;
     this.borrar = true;
 
-    this.crud1Form = this.fb.group({});
+    // this.crud1Form = this.fb.group({});
 
     switch (this.tipo) {
 
+      // Definición de entidades de datos
       case 'L': {
 
         this.tools = false;
         this.label_agregar = "Agregar valor";
-        
-        // Los campos del formulario principal del registro
-        this.campos = [
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "id",
-            requerido: true,
-            etiqueta: "ID",
-            valordefault: "",
-            ancho: 13,
-            formato: "C",
-            disable: true,
-            visible: false
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "descripcion",
-            requerido: true,
-            etiqueta: "Descripción",
-            valordefault: "",
-            ancho: 100,
-            formato: "C",
-            disable: false,
-            visible: true
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "objeto",
-            requerido: true,
-            etiqueta: "objeto",
-            valordefault: "",
-            ancho: 2000,
-            formato: "C",
-            disable: false,
-            visible: false
-          }
-        ];   
-        // Las columnas de la tabla de valores
-        this.colTitulos = [
-          {
-            literal: "ID",
-            ordenar: false,
-            orden: false,
-            campo: "id"
-          },
-          {
-            literal: "Código",
-            ordenar: false,
-            orden: "none",
-            campo: "codigo"
-          },
-          {
-            literal: "Texto",
-            ordenar: false,
-            orden: "none",
-            campo: "descripcion"
-          },
-          {
-            literal: "Orden",
-            ordenar: false,
-            orden: "up",
-            campo: "orden"
-          }
-        ];
-
+ 
         /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
         this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));
         this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));
-
         break;
+
       }
       case 'T': {
 
-        this.recuperaTablas();
+        // await this.recuperaTablas();
 
         this.tools = true;
         this.label_agregar = "Agregar campo";
 
-        // Los campos del formulario principal del registro
-        this.campos = [
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "id",
-            requerido: true,
-            etiqueta: "ID",
-            valordefault: "",
-            ancho: 13,
-            formato: "C",
-            disable: true,
-            visible: false
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "descripcion",
-            requerido: true,
-            etiqueta: "Descripción",
-            valordefault: "",
-            ancho: 100,
-            formato: "C",
-            disable: false,
-            visible: true
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "tabla",
-            requerido: true,
-            etiqueta: "Nombre de la tabla en BBDD",
-            valordefault: "",
-            ancho: 100,
-            formato: "C",
-            disable: false,
-            visible: true
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "objeto",
-            requerido: true,
-            etiqueta: "objeto",
-            valordefault: "",
-            ancho: 2000,
-            formato: "C",
-            disable: false,
-            visible: false
-          }
-        ];   
-
-        // Las columnas de la tabla de valores
-        this.colTitulos = [
-          {
-            literal: "ID",
-            ordenar: false,
-            orden: false,
-            campo: "id"
-          },
-          {
-            literal: "Etiqueta",
-            ordenar: false,
-            orden: "up",
-            campo: "etiqueta"
-          },
-          {
-            literal: "Nombre del campo",
-            ordenar: false,
-            orden: "none",
-            campo: "nombre"
-          },
-          {
-            literal: "Tipo",
-            ordenar: false,
-            orden: "none",
-            campo: "ntipo"
-          },
-          {
-            literal: "Ancho",
-            ordenar: false,
-            orden: "none",
-            campo: "ancho"
-          },
-          {
-            literal: "Decimales",
-            ordenar: false,
-            orden: "none",
-            campo: "decimales"
-          },
-          {
-            literal: "Valor inicial",
-            ordenar: false,
-            orden: "none",
-            campo: "default"
-          }
-        ];
         // Tipos de campos
         this.tiposCampo = this.funciones.tiposCampo;
-        
+
         /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
         this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));
         this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));
         this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));
-        
+
+        await this.recuperaTablas();
+        this.campos[2].lista = this.tablasBBDD;
         break;
 
       }
@@ -353,88 +254,7 @@ export class Crud1ConvaloresComponent implements OnInit {
 
         this.tools = true;
         this.label_agregar = "Agregar filtro";
-
-        // Los campos del formulario principal del registro
-        this.campos = [
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "id",
-            requerido: true,
-            etiqueta: "ID",
-            valordefault: "",
-            ancho: 13,
-            formato: "C",
-            disable: true,
-            visible: false
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "descripcion",
-            requerido: true,
-            etiqueta: "Descripcion",
-            valordefault: "",
-            ancho: 100,
-            formato: "C",
-            disable: false,
-            visible: true
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "cadenaSQL",
-            requerido: true,
-            etiqueta: "Cadena SQL",
-            valordefault: "",
-            ancho: 2000,
-            formato: "A",
-            disable: false,
-            visible: true
-          },
-          {
-            id: this.funciones.generarUUID(""),
-            campo: "objeto",
-            requerido: true,
-            etiqueta: "objeto",
-            valordefault: "",
-            ancho: 2000,
-            formato: "C",
-            disable: false,
-            visible: false
-          }
-        ];   
-
-        // Las columnas de la tabla de valores
-        this.colTitulos = [
-          {
-            literal: "ID",
-            ordenar: false,
-            orden: false,
-            campo: "id"
-          },
-          {
-            literal: "Etiqueta",
-            ordenar: false,
-            orden: "none",
-            campo: "etiqueta"
-          },
-          {
-            literal: "Tipo",
-            ordenar: false,
-            orden: "none",
-            campo: "ntipo"
-          },
-          {
-            literal: "Variable en la cadena",
-            ordenar: false,
-            orden: "none",
-            campo: "campo"
-          },
-          {
-            literal: "Obligatorio",
-            ordenar: false,
-            orden: "none",
-            campo: "obligatorio"
-          }
-        ];
+        
         // Tipos de campos
         this.tiposCampo = this.funciones.tiposCampo;
         
@@ -442,11 +262,78 @@ export class Crud1ConvaloresComponent implements OnInit {
         this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));
         this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));
         this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(2000)]));
-        
+        break;
+      }
+      // Definiciones de pantallas
+      case 'G': {
+
+        this.tools = false;
+        this.label_agregar = "Agregar columna";
+
+        this.campos[5].lista = this.lEntDatos;
+        this.campos[10].lista = this.lPantallas;
+        this.campos[12].lista = this.lPantallas;
+        this.campos[14].lista = this.lPantallas;
+
+        /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
+        this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));         // id
+        this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));  // Descripcion
+        this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));  // Titulo
+        this.crud1Form.addControl(this.campos[3].campo, new FormControl("", [Validators.maxLength(100)]));                       // Subtitulo
+        this.crud1Form.addControl(this.campos[4].campo, new FormControl("", [Validators.maxLength(13)]));                        // IdQuery
+        this.crud1Form.addControl(this.campos[5].campo, new FormControl("", [Validators.maxLength(200)]));                       // nQuery
+        this.crud1Form.addControl(this.campos[6].campo, new FormControl("", [Validators.maxLength(1)]));                         // rowAgregar
+        this.crud1Form.addControl(this.campos[7].campo, new FormControl("", [Validators.maxLength(1)]));                         // rowEditar
+        this.crud1Form.addControl(this.campos[8].campo, new FormControl("", [Validators.maxLength(1)]));                         // rowListar
+        this.crud1Form.addControl(this.campos[9].campo, new FormControl("", [Validators.maxLength(13)]));                        // pantallaAdd
+        this.crud1Form.addControl(this.campos[10].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaAdd
+        this.crud1Form.addControl(this.campos[11].campo, new FormControl("", [Validators.maxLength(13)]));                       // pantallaEdit
+        this.crud1Form.addControl(this.campos[12].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaEdit
+        this.crud1Form.addControl(this.campos[13].campo, new FormControl("", [Validators.maxLength(13)]));                       // pantallaList
+        this.crud1Form.addControl(this.campos[14].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaList
         break;
 
       }
+      case 'C': {
+
+        this.tools = false;
+        this.label_agregar = "Agregar columna";
+
+        // Tipos de campos
+        this.tiposCampo = this.funciones.tiposCampo;
+
+        this.campos[5].lista = this.lEntDatos;
         
+        /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
+        this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));         // id
+        this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));  // Descripcion
+        this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));  // Titulo
+        this.crud1Form.addControl(this.campos[3].campo, new FormControl("", [Validators.maxLength(100)]));                       // Subtitulo
+        this.crud1Form.addControl(this.campos[4].campo, new FormControl("", [Validators.maxLength(13)]));                        // tabla
+        this.crud1Form.addControl(this.campos[5].campo, new FormControl("", [Validators.maxLength(200)]));                       // nTabla
+        break;
+
+      }  
+      case 'R': {
+
+        this.tools = false;
+        this.label_agregar = "Agregar columna";
+
+        this.campos[5].lista = this.lEntDatos;
+        this.campos[7].lista = this.lOrientaciones;
+
+        /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
+        this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));         // id
+        this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));  // Descripcion
+        this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));  // Titulo
+        this.crud1Form.addControl(this.campos[3].campo, new FormControl("", [Validators.maxLength(100)]));                       // Subtitulo
+        this.crud1Form.addControl(this.campos[4].campo, new FormControl("", [Validators.maxLength(13)]));                        // IdQuery
+        this.crud1Form.addControl(this.campos[5].campo, new FormControl("", [Validators.maxLength(200)]));                       // nQuery
+        this.crud1Form.addControl(this.campos[6].campo, new FormControl(""));                                                    // orientación
+        this.crud1Form.addControl(this.campos[7].campo, new FormControl("", [Validators.required]));                             // norientación
+        break;
+
+      }
     }
 
   }
@@ -517,158 +404,346 @@ export class Crud1ConvaloresComponent implements OnInit {
     resp.afterClosed().subscribe(async dlgResp => {
       if (dlgResp == true) {
       
-        // Poner spinner
-        this.showspinner.updateShowSpinner(true);
-        
-        let objLista: any[] = [];
-        let objTabla: any = {nombre: "", oCampos: []};
-        let objQuery: any;
-        let objSelectable: any;
-
-        switch (this.tipo) {
-          case "L": {
-            this.registros.forEach(reg => {
-              objLista.push({
-                id: reg.id,
-                codigo: reg.codigo,
-                descripcion: reg.descripcion,
-                orden: reg.orden
-              });
-            })
-            break;
-          }
-          case "T": {
-
-            let tmpCampos: any[] = [];
-
-            if (this.objetoCompleto && this.objetoCompleto.oTabla && this.objetoCompleto.oTabla.oCampos) {
-              this.objetoCompleto.oTabla.oCampos.forEach((reg: { id: any; nombre: any; tipo: any; ancho: any; decimales: any; etiqueta: any; default: any; }) => {
-                tmpCampos.push({
-                  id: reg.id,
-                  nombre: reg.nombre,
-                  tipo: reg.tipo,
-                  ancho: reg.ancho,
-                  decimales: reg.decimales,
-                  etiqueta: reg.etiqueta,
-                  default: reg.default
-                });
-              })
-            }
-            objTabla = {
-              nombre: this.crud1Form.controls['tabla'].value,
-              oCampos: tmpCampos
-            }
-            break;
-          }
-          case "Q": {
-
-            let tmpFiltros: any[] = [];
-
-            if (this.objetoCompleto && this.objetoCompleto.oQuery && this.objetoCompleto.oQuery.oFiltros) {
-              this.objetoCompleto.oQuery.oFiltros.forEach((reg: { obligatorio: string; id: any; etiqueta: any; tipo: any; campo: any; }) => {
-                let xBoolean = false;
-                if (reg.obligatorio == "Si") {
-                  xBoolean = true;
-                }
-                tmpFiltros.push({
-                  id: reg.id,
-                  etiqueta: reg.etiqueta,
-                  tipo: reg.tipo,
-                  campo: reg.campo,
-                  obligatorio: xBoolean
-                });
-              })
-            }
-            objQuery = {
-              cadenaSQL: this.crud1Form.controls['cadenaSQL'].value,
-              oFiltros: tmpFiltros
-            }
-            break;
-          }
-          case "I": {
-            objSelectable = {
-              idQuery: '',
-              campo_valor: '',
-              campo_descripcion: ''
-            }
-            break;
-          }
+        if (this.tabla == "sys_modelo_datos") {
+          this.saveDatos();
         }
+        if (this.tabla == "sys_screens") {
+          this.savePantallas();
+        }
+      }
 
-        // Componer el modelo y rellenar los datos
-        let tmpModelo = ["tipo", "descripcion", "entorno", "objeto"];
-        let tmpObjeto = {
-          tipo: this.tipo,
-          descripcion: this.crud1Form.controls["descripcion"].value,
-          entorno: 'C',
-          objeto: JSON.stringify({
-            oDatosGenerales: {
-              tipo: this.tipo,
-              descripcion: this.crud1Form.controls["descripcion"].value,
-              entorno: 'C'
-            },
-            oLista: objLista,
-            oTabla: objTabla,
-            oQuery: objQuery,
-            oSelectable: objSelectable
+    })
+  }
+  async saveDatos() {
+
+    // Poner spinner
+    this.showspinner.updateShowSpinner(true);
+    
+    let objLista: any[] = [];
+    let objTabla: any = {nombre: "", oCampos: []};
+    let objQuery: any;
+    let objSelectable: any;
+
+    switch (this.tipo) {
+      case "L": {
+        this.registros.forEach(reg => {
+          objLista.push({
+            id: reg.id,
+            codigo: reg.codigo,
+            descripcion: reg.descripcion,
+            orden: reg.orden
+          });
+        })
+        break;
+      }
+      case "T": {
+
+        let tmpCampos: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oTabla && this.objetoCompleto.oTabla.oCampos) {
+          this.objetoCompleto.oTabla.oCampos.forEach((reg: { id: any; nombre: any; tipo: any; ancho: any; decimales: any; etiqueta: any; default: any; }) => {
+            tmpCampos.push({
+              id: reg.id,
+              nombre: reg.nombre,
+              tipo: reg.tipo,
+              ancho: reg.ancho,
+              decimales: reg.decimales,
+              etiqueta: reg.etiqueta,
+              default: reg.default
+            });
           })
         }
-
-        if (this.global.DEBUG)
-          console.log("Para enviar a GUARDAR:", tmpModelo, tmpObjeto);
-
-        // Enviar al servicio de dataaccess para guardar ( Se envia sys_modelo_datos )
-        if (this.nuevo) {
-
-          // Nuevo registro
-          await this.dataaccess.add(this.tabla, '', tmpModelo, tmpObjeto,
-            async (respuesta: any, datos: any) => {
-        
-              if (respuesta == 'OK') {
-        
-                if (this.global.DEBUG)
-                  console.log(respuesta);
-
-                this.crud1Form.markAsUntouched();
-                this.back();
-
-              } else {
-                // Quitar el spinner y quedar en crud1
-                this.showspinner.updateShowSpinner(false);
-              }
-          
-            })
-          // Quitar el spinner y volver al crud0
-          this.showspinner.updateShowSpinner(false);
-
-        } else {
-
-          // Actualización
-          await this.dataaccess.update(this.tabla, '', "id='" + this.id + "'", tmpModelo, tmpObjeto,
-            async (respuesta: any, datos: any) => {
-        
-              if (respuesta == 'OK') {
-                    
-                if (this.global.DEBUG)
-                  console.log(respuesta);
-
-                this.crud1Form.markAsUntouched();
-                this.back();
-
-              } else {
-                // Quitar el spinner y quedar en crud1
-                this.showspinner.updateShowSpinner(false);
-              }
-        
-            })
-          // Quitar el spinner y volver al crud0
-          this.showspinner.updateShowSpinner(false);
-
-        } // Fin nuevo o actualizacion
-
+        objTabla = {
+          nombre: this.crud1Form.controls['tabla'].value,
+          oCampos: tmpCampos
+        }
+        break;
       }
+      case "Q": {
+
+        let tmpFiltros: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oQuery && this.objetoCompleto.oQuery.oFiltros) {
+          this.objetoCompleto.oQuery.oFiltros.forEach((reg: { obligatorio: string; id: any; etiqueta: any; tipo: any; campo: any; }) => {
+            let xBoolean = false;
+            if (reg.obligatorio == "Si") {
+              xBoolean = true;
+            }
+            tmpFiltros.push({
+              id: reg.id,
+              etiqueta: reg.etiqueta,
+              tipo: reg.tipo,
+              campo: reg.campo,
+              obligatorio: xBoolean
+            });
+          })
+        }
+        objQuery = {
+          cadenaSQL: this.crud1Form.controls['cadenaSQL'].value,
+          oFiltros: tmpFiltros
+        }
+        break;
+      }
+      case "I": {
+        objSelectable = {
+          idQuery: '',
+          campo_valor: '',
+          campo_descripcion: ''
+        }
+        break;
+      }
+    }
+
+    // Componer el modelo y rellenar los datos
+    let tmpModelo = ["tipo", "descripcion", "entorno", "objeto"];
+    let tmpObjeto = {
+      tipo: this.tipo,
+      descripcion: this.crud1Form.controls["descripcion"].value,
+      entorno: 'C',
+      objeto: JSON.stringify({
+        oDatosGenerales: {
+          tipo: this.tipo,
+          descripcion: this.crud1Form.controls["descripcion"].value,
+          entorno: 'C'
+        },
+        oLista: objLista,
+        oTabla: objTabla,
+        oQuery: objQuery,
+        oSelectable: objSelectable
+      })
+    }
+
+    if (this.global.DEBUG)
+      console.log("Para enviar a GUARDAR:", tmpModelo, tmpObjeto);
+
+    // Enviar al servicio de dataaccess para guardar ( Se envia sys_modelo_datos )
+    if (this.nuevo) {
+
+      // Nuevo registro
+      await this.dataaccess.add(this.tabla, '', tmpModelo, tmpObjeto,
+        async (respuesta: any, datos: any) => {
+    
+          if (respuesta == 'OK') {
+    
+            if (this.global.DEBUG)
+              console.log(respuesta);
+
+            this.crud1Form.markAsUntouched();
+            this.back();
+
+          } else {
+            // Quitar el spinner y quedar en crud1
+            this.showspinner.updateShowSpinner(false);
+          }
       
-    })
+        })
+      // Quitar el spinner y volver al crud0
+      this.showspinner.updateShowSpinner(false);
+
+    } else {
+
+      // Actualización
+      await this.dataaccess.update(this.tabla, '', "id='" + this.id + "'", tmpModelo, tmpObjeto,
+        async (respuesta: any, datos: any) => {
+    
+          if (respuesta == 'OK') {
+                
+            if (this.global.DEBUG)
+              console.log(respuesta);
+
+            this.crud1Form.markAsUntouched();
+            this.back();
+
+          } else {
+            // Quitar el spinner y quedar en crud1
+            this.showspinner.updateShowSpinner(false);
+          }
+    
+        })
+      // Quitar el spinner y volver al crud0
+      this.showspinner.updateShowSpinner(false);
+
+    } // Fin nuevo o actualizacion
+
+  }
+      
+  async savePantallas() {
+
+    // Poner spinner
+    this.showspinner.updateShowSpinner(true);
+    
+    let objDatosGenerales: any;
+    let objDisenio: any;
+    let objTablaGestiones: any = {idQuery: "", Columnas: [], Row_Agregar: false, Row_Listar: false, Row_Editar: false, PantallaAdd: "", PantallaList: "", PantallaEdit: ""};
+    let objCRUD01: any = { tabla: "", Campos: [] };
+    let objCapturaDatos: any = { campos: [] };
+    let objListado: any = { idQuery: "", Columnas: [], orientacion: "" };
+    let objBuscador: any = { idQuery: "", Columnas: [], devolverValor: "0" };
+    let objSelector:  any = { isQuery: "", ColumnasO: [], ColumnasD: [], maxSeleccion: 0 };
+
+    switch (this.tipo) {
+      case "G": {
+
+        let tmpColumnas: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oTablaGestiones && this.objetoCompleto.oTablaGestiones.Columnas) {
+          this.objetoCompleto.oTablaGestiones.Columnas.forEach((reg: { id: any; nombre: any; campo: any; ordenar: any; }) => {
+            tmpColumnas.push({
+              id: reg.id,
+              titulo: reg.nombre,
+              campo: reg.campo,
+              ordenar: reg.ordenar
+            });
+          })
+        }
+        objDisenio = {
+          titulo: this.crud1Form.controls['titulo'].value,
+          subtitulo: this.crud1Form.controls['subtitulo'].value,
+        }
+        objTablaGestiones = {
+          idQuery: this.crud1Form.controls['idQuery'].value,
+          Columnas: tmpColumnas,
+          Row_Agregar: this.crud1Form.controls['rowAgregar'].value,
+          Row_Editar: this.crud1Form.controls['rowEditar'].value,
+          Row_Listar: this.crud1Form.controls['rowListar'].value,
+          PantallaAdd: this.crud1Form.controls['pantallaAdd'].value,
+          PantallaEdit: this.crud1Form.controls['pantallaEdit'].value,
+          PantallaList: this.crud1Form.controls['pantallaList'].value
+        }
+        break;
+      }
+      case "C": {
+
+        let tmpCampos: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oCRUD01 && this.objetoCompleto.oCRUD01.Campos) {
+          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { id: any; etiqueta: any; campo: any; formato: any; requerido: boolean; valdefault: any; enabledinicial: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+            tmpCampos.push({
+              id: reg.id,
+              etiqueta: reg.etiqueta,
+              campo: reg.campo,
+              formato: reg.formato,
+              valdefault: reg.valdefault,
+              enabledinicial: reg.enabledinicial,
+              requerido: reg.requerido,
+              ancho: reg.ancho,
+              decimales: reg.decimales,
+              listaval: reg.listaval,
+              selectable: reg.selectable
+            });
+          })
+        }
+        objDisenio = {
+          titulo: this.crud1Form.controls['titulo'].value,
+          subtitulo: this.crud1Form.controls['subtitulo'].value,
+        }
+        objCRUD01 = {
+          tabla: this.crud1Form.controls['tabla'].value,
+          Campos: tmpCampos
+        }
+        break;
+      }
+      case "R": {
+
+        let tmpColumnas: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oListado && this.objetoCompleto.oListado.Columnas) {
+          this.objetoCompleto.oListado.Columnas.forEach((reg: { id: any; nombre: any; campo: any; ancho: any; }) => {
+            tmpColumnas.push({
+              id: reg.id,
+              titulo: reg.nombre,
+              campo: reg.campo,
+              ancho: reg.ancho
+            });
+          })
+        }
+        objDisenio = {
+          titulo: this.crud1Form.controls['titulo'].value,
+          subtitulo: this.crud1Form.controls['subtitulo'].value,
+        }
+        objListado = {
+          idQuery: this.crud1Form.controls['idQuery'].value,
+          Columnas: tmpColumnas,
+          orientacion: this.crud1Form.controls['orientacion'].value
+        }
+        break;
+      } 
+    } // Final del switch
+
+    objDatosGenerales = {
+      id: this.id,
+      titulo: this.crud1Form.controls["descripcion"].value,
+    };
+
+    // Componer el modelo y rellenar los datos
+    let tmpModelo = ["tipo", "titulo", "objeto"];
+    let tmpObjeto = {
+      tipo: this.tipo,
+      titulo: this.crud1Form.controls["descripcion"].value,
+      objeto: JSON.stringify({
+        oDatosGenerales: objDatosGenerales,
+        oDisenio: objDisenio,
+        oTablaGestiones: objTablaGestiones,
+        oCRUD01: objCRUD01,
+        oCapturaDatos: objCapturaDatos,
+        oListado: objListado,
+        oBuscador: objBuscador,
+        oSelector: objSelector
+      })
+    }
+
+    if (this.global.DEBUG)
+      console.log("Para enviar a GUARDAR:", tmpModelo, tmpObjeto);
+
+    // Enviar al servicio de dataaccess para guardar ( Se envia sys_modelo_datos )
+    if (this.nuevo) {
+
+      // Nuevo registro
+      await this.dataaccess.add(this.tabla, '', tmpModelo, tmpObjeto,
+        async (respuesta: any, datos: any) => {
+    
+          if (respuesta == 'OK') {
+    
+            if (this.global.DEBUG)
+              console.log(respuesta);
+
+            this.crud1Form.markAsUntouched();
+            this.back();
+
+          } else {
+            // Quitar el spinner y quedar en crud1
+            this.showspinner.updateShowSpinner(false);
+          }
+      
+        })
+      // Quitar el spinner y volver al crud0
+      this.showspinner.updateShowSpinner(false);
+
+    } else {
+    
+      // Actualización
+      await this.dataaccess.update(this.tabla, '', "id='" + this.id + "'", tmpModelo, tmpObjeto,
+        async (respuesta: any, datos: any) => {
+    
+          if (respuesta == 'OK') {
+                
+            if (this.global.DEBUG)
+              console.log(respuesta);
+
+            this.crud1Form.markAsUntouched();
+            this.back();
+
+          } else {
+            // Quitar el spinner y quedar en crud1
+            this.showspinner.updateShowSpinner(false);
+          }
+    
+        })
+      // Quitar el spinner y volver al crud0
+      this.showspinner.updateShowSpinner(false);
+
+    } // Fin nuevo o actualizacion
+
   }
 
   delete() {
@@ -729,6 +804,18 @@ export class Crud1ConvaloresComponent implements OnInit {
             tmpObjeto.oQuery.oFiltros = tmpObjeto.oQuery.oFiltros.filter((valor: { id: string; }) => valor.id != pId);
             break;
           }
+          case 'G': {
+            tmpObjeto.oTablaGestiones.Columnas = tmpObjeto.oTablaGestiones.Columnas.filter((valor: { id: string; }) => valor.id != pId);
+            break;
+          }
+          case 'C': {
+            tmpObjeto.oCRUD01.Campos = tmpObjeto.oCRUD01.Campos.filter((valor: { id: string; }) => valor.id != pId);
+            break;
+          }
+          case 'R': {
+            tmpObjeto.oListado.Columnas = tmpObjeto.oListado.Columnas.filter((valor: { id: string; }) => valor.id != pId);
+            break;
+          }
         }
 
         this.registroCompleto.objeto = JSON.stringify(tmpObjeto);
@@ -760,28 +847,24 @@ export class Crud1ConvaloresComponent implements OnInit {
     })
   }
   handlePageEvent(e: PageEvent) {
-
-    if(this.global.DEBUG)
-      console.log("Evento", e);
-
     this.pageEvent = e;
     this.length = e.length;
     this.pageSize = e.pageSize;
     this.pageIndex = e.pageIndex;
     this.recuperarContenido();
-
   }
   setPageSizeOptions(setPageSizeOptionsInput: string) {
     if (setPageSizeOptionsInput) {
-      this.pageSizeOptions = setPageSizeOptionsInput.split(',').map(str => +str);
+      this.pageSizeOptions = setPageSizeOptionsInput.split(',').map((str: string | number) => +str);
     }
   }
-  recuperarContenido() {
+  async recuperarContenido() {
 
     this.registros = [];
 
     switch (this.tipo) {
 
+      // Origenes de datos
       case 'L': {
         this.objetoCompleto.oLista.forEach((reg: { id: string, codigo: string; descripcion: string; orden: number; }) => {
           this.registros.push({
@@ -838,6 +921,96 @@ export class Crud1ConvaloresComponent implements OnInit {
         }
         break;
       }
+      // Definiciones de pantallas
+      case 'G': {
+        if (this.objetoCompleto.oTablaGestiones.Columnas) {
+
+          this.objetoCompleto.oTablaGestiones.Columnas.forEach((reg: { id: any; titulo: any; campo: any; ordenar: any; }) => {
+
+            let xBoolean = "No";
+            if (reg.ordenar) {
+              xBoolean = "Si";
+            }
+
+            this.registros.push({
+              id: reg.id,
+              titulo: reg.titulo,
+              campo: reg.campo,
+              ordenar: xBoolean
+            })
+
+          });
+        }
+        break;
+      }
+      case 'C': {
+
+        if (this.objetoCompleto.oCRUD01.Campos) {
+
+          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { requerido: any; id: any; etiqueta: any; campo: any; formato: any; valdefault: any; enabledinicial: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+
+            let xReq = "No";
+            if (reg.requerido == true) {
+              xReq = "Si";
+            }
+
+            let xEna = "No";
+            if (reg.enabledinicial == true) {
+              xEna = "Si"
+            }
+
+            let unTipo = this.tiposCampo.filter(tipo => tipo.codigo.startsWith(reg.formato));
+            let unaListaVal = this.lListasVal.filter((lista: { id: string; }) => lista.id.startsWith(reg.listaval));
+            let xnListaval = "";
+
+            if (unaListaVal.length > 0) {
+              xnListaval = unaListaVal[0].nombre; 
+            }
+
+            let unaSelectable = this.lSelectables.filter((lista: { id: string; }) => lista.id.startsWith(reg.selectable));
+            let xnSelectable = "";
+
+            if (unaSelectable.length > 0) {
+              xnSelectable = unaSelectable[0].nombre; 
+            }
+
+            this.registros.push({
+              id: reg.id,
+              etiqueta: reg.etiqueta,
+              campo: reg.campo,
+              formato: reg.formato,
+              nformato: unTipo[0].texto,
+              valdefault: reg.valdefault,
+              enabledinicial: xEna,
+              requerido: xReq,
+              ancho: reg.ancho,
+              decimales: reg.decimales,
+              listaval: reg.listaval,
+              nlistaval: xnListaval,
+              selectable: reg.selectable,
+              nselectable: xnSelectable
+            })
+
+          });
+        }
+        break;
+      }
+      case 'R': {
+        if (this.objetoCompleto.oListado.Columnas) {
+
+          this.objetoCompleto.oListado.Columnas.forEach((reg: { id: any; titulo: any; campo: any; ancho: any; }) => {
+
+            this.registros.push({
+              id: reg.id,
+              titulo: reg.titulo,
+              campo: reg.campo,
+              ancho: reg.ancho
+            })
+
+          });
+        }
+        break;
+      }
     }
 
     if (this.registros.length > 0) {
@@ -882,170 +1055,309 @@ export class Crud1ConvaloresComponent implements OnInit {
   }
   goValor(pIdvalor: string) {
 
-    if(pIdvalor && pIdvalor != '' && pIdvalor != null) {
+    if (pIdvalor && pIdvalor != '' && pIdvalor != null) {
       // Editar un valor existente
-      this.router.navigateByUrl('/in' + this.rutaCrud2 + '/' + this.id + '/' + pIdvalor );
+      this.router.navigateByUrl('/in' + this.rutaCrud2 + '/' + this.id + '/' + pIdvalor);
     } else {
 
       if (this.nuevo) {
         // Grabar el nuevo registro antes de crear los valores
-        let resp = this.global.mensaje("Pregunta...", "Antes de agregar un valor debes guardar el registro. Quieres guardar los datos?", "Q", "Si", "No");
+        let resp = this.global.mensaje("Pregunta...", "Antes de agregar un valor debes guardar el registro. Quieres guardar los datos?", "Q", "Si y continuar", "No");
         resp.afterClosed().subscribe(async dlgResp => {
           if (dlgResp == true) {
-          
-              // Poner spinner
-            this.showspinner.updateShowSpinner(true);
             
-            let objLista: any[] = [];
-            let objTabla: any;
-            let objQuery: any;
-            let objSelectable: any;
-
-            switch (this.tipo) {
-              case "L": {
-                this.registros.forEach(reg => {
-                  objLista.push({
-                    id: reg.id,
-                    codigo: reg.codigo,
-                    descripcion: reg.descripcion,
-                    orden: reg.orden
-                  });
-                })
-                break;
-              }
-              case "T": {
-
-                let tmpCampos: any[] = [];
-
-                if (this.objetoCompleto && this.objetoCompleto.oTabla && this.objetoCompleto.oTabla.oCampos) {
-                  this.objetoCompleto.oTabla.oCampos.forEach((reg: { id: any; nombre: any; tipo: any; ancho: any; decimales: any; etiqueta: any; default: any; }) => {
-                    
-                    tmpCampos.push({
-                      id: reg.id,
-                      nombre: reg.nombre,
-                      tipo: reg.tipo,
-                      ancho: reg.ancho,
-                      decimales: reg.decimales,
-                      etiqueta: reg.etiqueta,
-                      default: reg.default
-                    });
-
-                  })                  
-                }  
-                objTabla = {
-                  nombre: this.crud1Form.controls['tabla'].value,
-                  oCampos: tmpCampos
-                }
-                break;
-              }
-              case "Q": {
-
-                let tmpFiltros: any[] = [];
-
-                if (this.objetoCompleto && this.objetoCompleto.oQuery && this.objetoCompleto.oQuery.oFiltros) {
-                  this.objetoCompleto.oQuery.oFiltros.forEach((reg: { obligatorio: string; id: any; etqueta: any; tipo: any; campo: any; }) => {
-
-                    let xBoolean = false;
-                    if (reg.obligatorio == "Si") {
-                      xBoolean = true;
-                    }
-                    
-                    tmpFiltros.push({
-                      id: reg.id,
-                      etiqueta: reg.etqueta,
-                      tipo: reg.tipo,
-                      campo: reg.campo,
-                      obligatorio: xBoolean
-                    });         
-                    
-                  })                  
-                }  
-                objQuery = {
-                  cadenaSQL: this.crud1Form.controls['cadenaSQL'].value,
-                  oCampos: tmpFiltros
-                }
-                break;
-              }
-              case "I": {
-                objSelectable = {
-                  idQuery: '',
-                  campo_valor: '',
-                  campo_descripcion: ''
-                }
-                break;
-              }
+            if (this.tabla == "sys_modelo_datos") {
+              this.goValorDatos(pIdvalor);
             }
-
-            // Componer el modelo y rellenar los datos
-            let tmpModelo = ["tipo", "descripcion", "entorno", "objeto"];
-            let tmpObjeto = {
-              tipo: this.tipo,
-              descripcion: this.crud1Form.controls["descripcion"].value,
-              entorno: 'C',
-              objeto: JSON.stringify({
-                oDatosGenerales: {
-                  tipo: this.tipo,
-                  descripcion: this.crud1Form.controls["descripcion"].value,
-                  entorno: 'C'
-                },
-                oLista: objLista,
-                oTabla: objTabla,
-                oQuery: objQuery,
-                oSelectable: objSelectable
-              })
+            if (this.tabla == "sys_screens") {
+              this.goValorPantallas(pIdvalor);
             }
-
-
-            if (this.global.DEBUG)
-              console.log("Para enviar a GUARDAR:", tmpModelo, tmpObjeto);
-  
-            // Enviar al servicio de dataaccess para guardar ( Se envia sys_modelo_datos )
-            await this.dataaccess.add(this.tabla, '', tmpModelo, tmpObjeto,
-              async (respuesta: any, datos: any) => {
-          
-                if (respuesta == 'OK') {
-          
-                  if (this.global.DEBUG)
-                    console.log("Respuesta recibida desde ADD en el front:", respuesta, datos);
-  
-                  this.crud1Form.markAsUntouched();
-                  
-                  this.id = datos;
-
-                  // Quitar el spinner y ir a crear el valor
-                  this.showspinner.updateShowSpinner(false);
-
-                  pIdvalor = this.rutaCrud2;
-                  this.router.navigateByUrl('/in' + this.rutaCrud2 + '/' + this.id);
-
-  
-                } else {
-                  // Quitar el spinner y quedar en crud1
-                  this.showspinner.updateShowSpinner(false);
-                }
-            
-              })
-            
-
           }
-        
-        })
 
+        })
       } else {
-        // Como ya ha dado de alta algún valor no es nuevo
+        // Quitar el spinner y ir a crear el valor
+        this.showspinner.updateShowSpinner(false);
         pIdvalor = this.rutaCrud2;
         this.router.navigateByUrl('/in' + this.rutaCrud2 + '/' + this.id);
       }
     }
 
   }
-   async recuperaTablas() {
+  async goValorDatos(pIdvalor: string) {
 
+    // Poner spinner
     this.showspinner.updateShowSpinner(true);
+    
+    let objLista: any[] = [];
+    let objTabla: any;
+    let objQuery: any;
+    let objSelectable: any;
+
+    switch (this.tipo) {
+      case "L": {
+        this.registros.forEach(reg => {
+          objLista.push({
+            id: reg.id,
+            codigo: reg.codigo,
+            descripcion: reg.descripcion,
+            orden: reg.orden
+          });
+        })
+        break;
+      }
+      case "T": {
+
+        let tmpCampos: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oTabla && this.objetoCompleto.oTabla.oCampos) {
+          this.objetoCompleto.oTabla.oCampos.forEach((reg: { id: any; nombre: any; tipo: any; ancho: any; decimales: any; etiqueta: any; default: any; }) => {
+            
+            tmpCampos.push({
+              id: reg.id,
+              nombre: reg.nombre,
+              tipo: reg.tipo,
+              ancho: reg.ancho,
+              decimales: reg.decimales,
+              etiqueta: reg.etiqueta,
+              default: reg.default
+            });
+
+          })                  
+        }  
+        objTabla = {
+          nombre: this.crud1Form.controls['tabla'].value,
+          oCampos: tmpCampos
+        }
+        break;
+      }
+      case "Q": {
+
+        let tmpFiltros: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oQuery && this.objetoCompleto.oQuery.oFiltros) {
+          this.objetoCompleto.oQuery.oFiltros.forEach((reg: { obligatorio: string; id: any; etqueta: any; tipo: any; campo: any; }) => {
+
+            let xBoolean = false;
+            if (reg.obligatorio == "Si") {
+              xBoolean = true;
+            }
+            
+            tmpFiltros.push({
+              id: reg.id,
+              etiqueta: reg.etqueta,
+              tipo: reg.tipo,
+              campo: reg.campo,
+              obligatorio: xBoolean
+            });         
+            
+          })                  
+        }  
+        objQuery = {
+          cadenaSQL: this.crud1Form.controls['cadenaSQL'].value,
+          oCampos: tmpFiltros
+        }
+        break;
+      }
+      case "I": {
+        objSelectable = {
+          idQuery: '',
+          campo_valor: '',
+          campo_descripcion: ''
+        }
+        break;
+      }
+    }
+
+    // Componer el modelo y rellenar los datos
+    let tmpModelo = ["tipo", "descripcion", "entorno", "objeto"];
+    let tmpObjeto = {
+      tipo: this.tipo,
+      descripcion: this.crud1Form.controls["descripcion"].value,
+      entorno: 'C',
+      objeto: JSON.stringify({
+        oDatosGenerales: {
+          tipo: this.tipo,
+          descripcion: this.crud1Form.controls["descripcion"].value,
+          entorno: 'C'
+        },
+        oLista: objLista,
+        oTabla: objTabla,
+        oQuery: objQuery,
+        oSelectable: objSelectable
+      })
+    }
+
+
+    if (this.global.DEBUG)
+      console.log("Para enviar a GUARDAR:", tmpModelo, tmpObjeto);
+
+    // Enviar al servicio de dataaccess para guardar ( Se envia sys_modelo_datos )
+    await this.dataaccess.add(this.tabla, '', tmpModelo, tmpObjeto,
+    async (respuesta: any, datos: any) => {
+
+      if (respuesta == 'OK') {
+
+        if (this.global.DEBUG)
+          console.log("Respuesta recibida desde ADD en el front:", respuesta, datos);
+
+        this.crud1Form.markAsUntouched();
+        
+        this.id = datos;
+
+        // Quitar el spinner y ir a crear el valor
+        this.showspinner.updateShowSpinner(false);
+
+        pIdvalor = this.rutaCrud2;
+        this.router.navigateByUrl('/in' + this.rutaCrud2 + '/' + this.id);
+
+
+      } else {
+        // Quitar el spinner y quedar en crud1
+        this.showspinner.updateShowSpinner(false);
+      }
+  
+    })
+
+  }
+
+  async goValorPantallas(pIdvalor: string) {
+          
+    // Poner spinner
+    this.showspinner.updateShowSpinner(true);
+
+    let objDatosGenerales: any;
+    let objDisenio: any;
+    let objTablaGestiones: any = { idQuery: "", Columnas: [], Row_Agregar: false, Row_Listar: false, Row_Editar: false, PantallaAdd: "", PantallaList: "", PantallaEdit: "" };
+    let objCRUD01: any = { tabla: "", Campos: [] };
+    let objCapturaDatos: any = { campos: [] };
+    let objListado: any = { idQuery: "", Columnas: [], idPlantilla: "" };
+    let objBuscador: any = { idQuery: "", Columnas: [], devolverValor: "0" };
+    let objSelector: any = { isQuery: "", ColumnasO: [], ColumnasD: [], maxSeleccion: 0 };
+
+    switch (this.tipo) {
+      case "G": {
+
+        let tmpColumnas: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oTablaGestiones && this.objetoCompleto.oTablaGestiones.Columnas) {
+          this.objetoCompleto.oTablaGestiones.Columnas.forEach((reg: { id: any; titulo: any; campo: any; ordenar: any; }) => {
+            tmpColumnas.push({
+              id: reg.id,
+              titulo: reg.titulo,
+              campo: reg.campo,
+              ordenar: reg.ordenar
+            });
+          })
+        }
+        objDisenio = {
+          titulo: this.crud1Form.controls['titulo'].value,
+          subtitulo: this.crud1Form.controls['subtitulo'].value,
+        }
+        objTablaGestiones = {
+          idQuery: this.crud1Form.controls['idQuery'].value,
+          Columnas: tmpColumnas,
+          Row_Agregar: this.crud1Form.controls['rowAgregar'].value,
+          Row_Editar: this.crud1Form.controls['rowEditar'].value,
+          Row_Listar: this.crud1Form.controls['rowListar'].value,
+          PantallaAdd: this.crud1Form.controls['pantallaAdd'].value,
+          PantallaEdit: this.crud1Form.controls['pantallaEdit'].value,
+          PantallaList: this.crud1Form.controls['pantallaList'].value
+        }
+        break;
+      }
+      case "C": {
+
+        let tmpCampos: any[] = [];
+
+        if (this.objetoCompleto && this.objetoCompleto.oCRUD01 && this.objetoCompleto.oCRUD01.Campos) {
+          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { id: any; etiqueta: any; campo: any; formato: any; valdefault: any; enabledinicial: any; requerido: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+            tmpCampos.push({
+              id: reg.id,
+              etiqueta: reg.etiqueta,
+              campo: reg.campo,
+              formato: reg.formato,
+              valdefault: reg.valdefault,
+              enabledinicial: reg.enabledinicial,
+              requerido: reg.requerido,
+              ancho: reg.ancho,
+              decimales: reg.decimales,
+              listaval: reg.listaval,
+              selectable: reg.selectable
+            });
+          })
+        }
+        objDisenio = {
+          titulo: this.crud1Form.controls['titulo'].value,
+          subtitulo: this.crud1Form.controls['subtitulo'].value,
+        }
+        objCRUD01 = {
+          tabla: this.crud1Form.controls['tabla'].value,
+          Campos: tmpCampos
+        }
+        break;
+      }
+    } // Final del switch
+
+    objDatosGenerales = {
+      id: this.id,
+      titulo: this.crud1Form.controls["descripcion"].value,
+    };
+
+    // Componer el modelo y rellenar los datos
+    let tmpModelo = ["tipo", "titulo", "objeto"];
+    let tmpObjeto = {
+      tipo: this.tipo,
+      titulo: this.crud1Form.controls["descripcion"].value,
+      objeto: JSON.stringify({
+        oDatosGenerales: objDatosGenerales,
+        oDisenio: objDisenio,
+        oTablaGestiones: objTablaGestiones,
+        oCRUD01: objCRUD01,
+        oCapturaDatos: objCapturaDatos,
+        oListado: objListado,
+        oBuscador: objBuscador,
+        oSelector: objSelector
+      })
+    }
+
+    if (this.global.DEBUG)
+      console.log("Para enviar a GUARDAR:", tmpModelo, tmpObjeto);
+
+    // Enviar al servicio de dataaccess para guardar ( Se envia sys_modelo_datos )
+    await this.dataaccess.add(this.tabla, '', tmpModelo, tmpObjeto,
+    async (respuesta: any, datos: any) => {
+
+      if (respuesta == 'OK') {
+
+        if (this.global.DEBUG)
+          console.log("Respuesta recibida desde ADD en el front:", respuesta, datos);
+
+        this.crud1Form.markAsUntouched();
+      
+        this.id = datos;
+
+        // Quitar el spinner y ir a crear el valor
+        this.showspinner.updateShowSpinner(false);
+
+        pIdvalor = this.rutaCrud2;
+        this.router.navigateByUrl('/in' + this.rutaCrud2 + '/' + this.id);
+
+
+      } else {
+        // Quitar el spinner y quedar en crud1
+        this.showspinner.updateShowSpinner(false);
+      }
+
+    })
+
+  }        
+
+  async recuperaTablas() {
 
     await this.dataaccess.tablasBBDD(
     async (respuesta: any, datos: any) => {
-          
+            
       if (respuesta == 'OK') {
 
         if (this.global.DEBUG)
@@ -1060,19 +1372,38 @@ export class Crud1ConvaloresComponent implements OnInit {
         // Quitar el spinner y quedar en crud1
         this.showspinner.updateShowSpinner(false);
       }
-  
+        
     })
 
   }
+
   // Recibir el valor del input de la LISTA DE VALORES
-  onKey(evento: any) { 
+  onKey(pLista: string, evento: any) { 
     let valor = evento.target.value;
-    this.opc_tablasBBDD = this.search(valor);
+
+    switch (pLista) {
+      case 'tabla': {
+        this.opc_Lista = this.search(this.tablasBBDD, valor);
+        break;
+      }
+      case 'nQuery': {
+        this.opc_Lista = this.search(this.lEntDatos, valor);
+        break;
+      }
+      case 'npantallaAdd':
+      case 'npantallaEdit':
+      case 'npantallaList':
+      {
+        this.opc_Lista = this.search(this.lPantallas, valor);
+        break;
+      }
+    }
   }
-  search(value: string) { 
+  search(pLista: any[], value: string) { 
     let filter = value.toLowerCase();
-    return this.tablasBBDD.filter(opcion => opcion.table_name.toLowerCase().startsWith(filter));
+    return pLista.filter((opcion: { nombre: string; }) => opcion.nombre.toLowerCase().startsWith(filter));
   }
+  
   // Tool Comparar la definición de la tabla con la tabla existente en la BBDD
   async goCompararEstructura() {
 
@@ -1084,7 +1415,7 @@ export class Crud1ConvaloresComponent implements OnInit {
     let pTabla = this.crud1Form.controls['tabla'].value;
 
     // Verificar si la tabla existe
-    let existe = this.tablasBBDD.filter((t: { table_name: any; }) => t.table_name == pTabla).length > 0;
+    let existe = this.tablasBBDD.filter((t: { nombre: any; }) => t.nombre == pTabla).length > 0;
 
     if (existe) {
       await this.dataaccess.estructura(pTabla,
@@ -1490,7 +1821,6 @@ export class Crud1ConvaloresComponent implements OnInit {
     }
     // Quitar el spinner y quedar en crud1
     this.showspinner.updateShowSpinner(false);
-    console.log("Errores detectados: ", this.pErrores);
     if (this.pErrores.length == 0) {
       this.statusmensaje.updateSistemStatus({ status: "INF", texto: "No hay diferencias entre la definición y la tabla de la base de datos" });
       this.showDiferencias = false;
@@ -1505,7 +1835,7 @@ export class Crud1ConvaloresComponent implements OnInit {
     // Verificar si la tabla existe
     let pDescripcion = this.crud1Form.controls['descripcion'].value;
     let pTabla = this.crud1Form.controls['tabla'].value;
-    let existe = this.tablasBBDD.filter((t: { table_name: any; }) => t.table_name == pTabla).length > 0;
+    let existe = this.tablasBBDD.filter((t: { nombre: any; }) => t.nombre == pTabla).length > 0;
 
     // La tabla no existe, no se pueden recuperar los campos
     if (!existe) {
@@ -1906,14 +2236,10 @@ export class Crud1ConvaloresComponent implements OnInit {
       
           })
 
-
         } // Fin de SI, continuar
-
 
       });  // Fin de Continuar/Cancelar
       
-
-
     } // Fin del else No hay tareas manuales
 
   }
@@ -2526,6 +2852,249 @@ export class Crud1ConvaloresComponent implements OnInit {
 
     })
 
+  }
+
+  // ////////////////// COMPLETAR EL CAMPO IDQUERY SEGUN LA LISTA SELECCIONABLE //////////////////////////////////////
+  poneIdQuery(pCampo: string, evento: any) {
+
+    let valor = evento.value;
+
+    switch (pCampo) {
+      case 'nQuery': {
+        let lq = this.lEntDatos.filter(q => q.nombre == valor);
+        this.laQ.id = lq[0].id;
+        this.laQ.nombre = lq[0].nombre;
+
+        this.crud1Form.controls["idQuery"].patchValue(this.laQ.id);
+        this.crud1Form.controls["nQuery"].patchValue(this.laQ.nombre);
+
+        break;
+      }
+      case 'npantallaAdd': {
+        let lq = this.lPantallas.filter(q => q.nombre == valor);
+        this.laQ.id = lq[0].id;
+        this.laQ.nombre = lq[0].nombre;
+
+        this.crud1Form.controls["pantallaAdd"].patchValue(this.laQ.id);
+        this.crud1Form.controls[pCampo].patchValue(this.laQ.nombre);
+         
+        break;
+      }
+      case 'npantallaEdit': {
+        let lq = this.lPantallas.filter(q => q.nombre == valor);
+        this.laQ.id = lq[0].id;
+        this.laQ.nombre = lq[0].nombre;
+
+        this.crud1Form.controls["pantallaEdit"].patchValue(this.laQ.id);
+        this.crud1Form.controls[pCampo].patchValue(this.laQ.nombre);
+         
+        break;
+      }
+      case 'npantallaList': {
+        let lq = this.lPantallas.filter(q => q.nombre == valor);
+        this.laQ.id = lq[0].id;
+        this.laQ.nombre = lq[0].nombre;
+
+        this.crud1Form.controls["pantallaList"].patchValue(this.laQ.id);
+        this.crud1Form.controls[pCampo].patchValue(this.laQ.nombre);
+          
+        break;
+      }
+      case 'nTabla': {
+        let lq = this.lEntDatos.filter(q => q.nombre == valor);
+        this.laQ.id = lq[0].id;
+        this.laQ.nombre = lq[0].nombre;
+
+        this.crud1Form.controls["tabla"].patchValue(this.laQ.id);
+        this.crud1Form.controls[pCampo].patchValue(this.laQ.nombre);
+          
+        break;
+      }
+      case 'norientacion': {
+        let lo = this.lOrientaciones.filter(o => o.nombre == valor);
+        this.crud1Form.controls["orientacion"].patchValue(lo[0].id);
+        this.crud1Form.controls[pCampo].patchValue(lo[0].nombre);
+          
+        break;
+      }
+    }
+
+
+  }
+
+  // ////////////////// RECUPERAR LA LISTA DE TODAS LAS PANTALLAS ////////////////////////////////////////////////////
+  async ListaDePantallas() {
+
+    // PONER SPINNER
+    this.showspinner.updateShowSpinner(true);
+
+    await this.dataaccess.read("sys_screens", "", "1=1", ["id", "titulo as descripcion"],
+    async (respuesta: any, datos: any) => {
+  
+      if (respuesta == 'OK') {
+
+        if (this.global.DEBUG)
+          console.log("Pantallas recuperadas:", datos);
+      
+        datos.forEach((q: { id: string; descripcion: string; }) => {
+          this.lPantallas.push({
+            id: q.id,
+            nombre: q.descripcion
+          })
+        
+        });
+        if (!this.nuevo) {
+
+          if (this.tipo == "G") {
+
+            let lq: any[] = [];
+            lq = this.lPantallas.filter(q => q.id == this.objetoCompleto.oTablaGestiones.PantallaAdd);
+            this.laP.id = lq[0].id;
+            this.laP.nombre = lq[0].nombre;
+            this.crud1Form.controls["npantallaAdd"].patchValue(this.laP.nombre);
+
+            lq = this.lPantallas.filter(q => q.id == this.objetoCompleto.oTablaGestiones.PantallaEdit);
+            this.laP.id = lq[0].id;
+            this.laP.nombre = lq[0].nombre;
+            this.crud1Form.controls["npantallaEdit"].patchValue(this.laP.nombre);
+
+            lq = this.lPantallas.filter(q => q.id == this.objetoCompleto.oTablaGestiones.PantallaList);
+            this.laP.id = lq[0].id;
+            this.laP.nombre = lq[0].nombre;
+            this.crud1Form.controls["npantallaList"].patchValue(this.laP.nombre);
+
+          }
+
+        }
+        // QUITAR SPINNER
+        this.showspinner.updateShowSpinner(false);
+
+      } else {
+        // QUITAR SPINNER
+        this.showspinner.updateShowSpinner(false);
+      }
+    
+    })
+      
+
+  }
+
+  // ////////////////// RECUPERAR LA LISTA DE LAS TABLAS DEFINIDAS ///////////////////////////////////////////////////
+  async ListaDeEntidadesDatos(pTipo: string) {
+
+    // PONER SPINNER
+    this.showspinner.updateShowSpinner(true);
+
+    await this.dataaccess.read("sys_modelo_datos", "", "tipo = '" + pTipo + "'", ["id", "descripcion"],
+    async (respuesta: any, datos: any) => {
+  
+      if (respuesta == 'OK') {
+
+        if (this.global.DEBUG)
+          console.log(pTipo + " recuperadas:", datos);
+      
+        if (pTipo == "L") {
+          this.lListasVal.push({
+            id: '',
+            nombre: ''
+          })
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lListasVal.push({
+              id: q.id,
+              nombre: q.descripcion
+            })
+          });          
+        } else if (pTipo == "I") {
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lSelectables.push({
+              id: '',
+              nombre: ''
+            })
+            this.lSelectables.push({
+              id: q.id,
+              nombre: q.descripcion
+            })
+          });          
+        } else {
+          this.lEntDatos.push({
+            id: '',
+            nombre: ''
+          })
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lEntDatos.push({
+              id: q.id,
+              nombre: q.descripcion
+            })
+          });
+        }
+
+        if (!this.nuevo) {
+          if (this.tipo == "I") {
+            let lq = this.lEntDatos.filter(q => q.id == this.objetoCompleto.oSelectable.idQuery);
+            if (lq.length > 0) {
+              this.laQ.id = lq[0].id;
+              this.laQ.nombre = lq[0].nombre;
+              this.crud1Form.controls["nQuery"].patchValue(this.laQ.nombre);
+            } else {
+              this.laQ.id = "";
+              this.laQ.nombre = "";
+              this.crud1Form.controls["nQuery"].patchValue("");
+            }
+
+          }
+          if (this.tipo == "G") {
+            let lq = this.lEntDatos.filter(q => q.id == this.objetoCompleto.oTablaGestiones.idQuery);
+            if (lq.length > 0) {
+              this.laQ.id = lq[0].id;
+              this.laQ.nombre = lq[0].nombre;
+              this.crud1Form.controls["nQuery"].patchValue(this.laQ.nombre);
+            } else {
+              this.laQ.id = "";
+              this.laQ.nombre = "";
+              this.crud1Form.controls["nQuery"].patchValue("");
+            }
+          }
+          if (this.tipo == "C") {
+            let lq = this.lEntDatos.filter(q => q.id == this.objetoCompleto.oCRUD01.tabla);
+            if (lq.length > 0) {
+              this.laQ.id = lq[0].id;
+              this.laQ.nombre = lq[0].nombre;
+              this.crud1Form.controls["nTabla"].patchValue(this.laQ.nombre);
+            } else {
+              this.laQ.id = "";
+              this.laQ.nombre = "";
+              this.crud1Form.controls["nTabla"].patchValue("");
+            }
+          }
+          if (this.tipo == "R") {
+            let lq = this.lEntDatos.filter(q => q.id == this.objetoCompleto.oListado.idQuery);
+            if (lq.length > 0) {
+              this.laQ.id = lq[0].id;
+              this.laQ.nombre = lq[0].nombre;
+              this.crud1Form.controls["nQuery"].patchValue(this.laQ.nombre);
+            } else {
+              this.laQ.id = "";
+              this.laQ.nombre = "";
+              this.crud1Form.controls["nQuery"].patchValue("");
+            }
+            if (!this.objetoCompleto.oListado.orientacion) {
+              this.objetoCompleto.oListado.orientacion = "V"
+            }
+            let lo = this.lOrientaciones.filter(o => o.id == this.objetoCompleto.oListado.orientacion);
+
+            this.crud1Form.controls["norientacion"].patchValue(lo[0].nombre);
+          }
+        }
+        // QUITAR SPINNER
+        this.showspinner.updateShowSpinner(false);
+
+      } else {
+        // QUITAR SPINNER
+        this.showspinner.updateShowSpinner(false);
+      }
+    
+    })
+    
   }
 
 } // Fin del Export general

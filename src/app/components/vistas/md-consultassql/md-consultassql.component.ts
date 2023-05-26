@@ -9,18 +9,23 @@ import { GlobalService, Funciones } from 'src/app/servicios/global.service';
 })
 export class MdConsultassqlComponent implements OnInit {
 
-  tipo: string = 'Q';
-  rutaAdd: string = '';
-
-  constructor(
-    private global: GlobalService,    
-    private funciones: Funciones,
-    private route: ActivatedRoute,
-  ) {
-
-    this.rutaAdd = '/consultasql';
-
-  }
+  rutaAdd: string = '/consultasql';
+  listaQuery: string = "62f66176bd8xQ";
+  campos: any[] = [
+    {
+      titulo: "ID",
+      ordenar: true,
+      campo: "id"
+    },
+    {
+      titulo: "Descripcion",
+      ordenar: true,
+      campo: "descripcion"
+    }
+  ];
+  
+  constructor() { }
+  
   ngOnInit(): void {}
 
 }

@@ -9,18 +9,22 @@ import { GlobalService, Funciones } from 'src/app/servicios/global.service';
 })
 export class MdListavaloresComponent implements OnInit {
 
-  tipo: string = 'L';
-  rutaAdd: string = '';
-
-  constructor(
-    private global: GlobalService,    
-    private funciones: Funciones,
-    private route: ActivatedRoute,
-  ) {
-
-    this.rutaAdd = '/listadevalor';
-
-  }
+  rutaAdd: string = '/listadevalor';
+  listaQuery: string = "62f66176bd8xL";
+  campos: any[] = [
+    {
+      titulo: "ID",
+      ordenar: true,
+      campo: "id"
+    },
+    {
+      titulo: "Descripcion",
+      ordenar: true,
+      campo: "descripcion"
+    }
+  ];
+  constructor() {}
+  
   ngOnInit(): void {}
 
 }

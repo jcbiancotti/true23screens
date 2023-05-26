@@ -1,10 +1,22 @@
 <div class="true-page">
 
-  <mat-card-title><h1>Ediciones de un registro (CRUD 1)</h1></mat-card-title>
+  <mat-card-title><h1>Edici&oacute;n de un registro (CRUD 1)</h1></mat-card-title>
 
   <mat-card-content>
 
+    <mat-card-content>
 
+      <app-crud1-convalores
+        id = "{{id}}"
+        tipo = "C"
+        rutaCrud2 = "{{rutaCrud2}}"
+        rutaRetorno = "{{rutaRetorno}}"
+        [campos] = "camposCrud1"
+        [colTitulos] = "columnasValores"
+        tabla = "{{tabla}}"
+      ></app-crud1-convalores>
+      
+    </mat-card-content>
   </mat-card-content>
 
 </div>

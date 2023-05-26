@@ -21,10 +21,20 @@ export class Crud2ValoresComponent implements OnInit {
   extraTitulo: string = "";
   crud2Form!: FormGroup;
   nuevo: boolean = true;
+
   campos: any[] = [];
   tiposCampo: any[] = [];
+  lPantallas: any[] = [];
+  lEntDatos: any[] = [];           // Entidades de datos definidas en sys_modelo_datos
+  lListasVal: any[] = [];          // Entidades de datos definidas en sys_modelo_datos
+  lSelectables: any[] = [];        // Entidades de datos definidas en sys_modelo_datos
+  opc_Lista: any[] = [];
+  laQ: any = { id: "", nombre: "" };
+  laP: any = { id: "", nombre: "" };
+
   error: string = "";
   registroCompleto: any;
+  objetoCompleto: any;
 
   constructor(
     private global: GlobalService,
@@ -36,11 +46,9 @@ export class Crud2ValoresComponent implements OnInit {
 
   ) { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
 
-    this.tiposCampo = this.funciones.tiposCampo;
-
-    if(!this.idvalor) {
+    if (!this.idvalor) {
       this.nuevo = true;
       this.idvalor = "(nuevo valor)";
       this.extraTitulo = "(nuevo valor)";
@@ -48,31 +56,79 @@ export class Crud2ValoresComponent implements OnInit {
       this.nuevo = false;
       this.extraTitulo = "Id principal: " + this.id + " / Id del valor: " + this.idvalor;
     }
-  
-    this.recuperaRegistroValor();
 
     // Definición del formulario y los campos
-    this.crud2Form = new FormGroup({});    
-
+    this.crud2Form = new FormGroup({});
     this.crud2Form = this.fb.group({});
-    this.crud2Campos.forEach((campo: { campo: string; valordefault: any; ancho: number; requerido: any; formato: string; }) => {
+    this.crud2Campos.forEach(async (campo: { campo: string; valordefault: any; ancho: number; requerido: any; formato: string; lista: any}) => {
+      
       this.crud2Form.addControl(campo.campo, new FormControl(campo.valordefault, [Validators.maxLength(campo.ancho)]));
-      if(campo.requerido) {
+      
+      if (campo.requerido) {
         this.crud2Form.controls[campo.campo].addValidators(Validators.required);
-      }      
-      if(campo.formato == 'E') {
+      }
+      if (campo.formato == 'E') {
         this.crud2Form.controls[campo.campo].addValidators(Validators.email);
       }
+
+      // Completar campos de descripcion
+      if (this.tipo == "C") {
+        if (campo.campo == "nformato") {
+          campo.lista = this.tiposCampo;
+        }
+        if (campo.campo == "nlistaval") {
+          campo.lista = this.lListasVal;
+        }
+        if (campo.campo == "nselectable") {
+          campo.lista = this.lSelectables;
+        }
+      } 
+      if (this.tipo == "T") {
+        if (campo.campo == "nformato") {
+          campo.lista = this.tiposCampo;
+        }
+      } 
+
     })
+    
+    await this.recuperarRegistroValor();
 
   }
 
-  async recuperaRegistroValor() {
+  async recuperarRegistroValor() {
 
     setTimeout(async () => {
       this.showspinner.updateShowSpinner(true);
 
-      let tmpCampos: string[] = ["id", "descripcion", "objeto"];
+      let tmpCampos: string[] = [];
+      if (this.tabla == "sys_modelo_datos" ) {
+        tmpCampos = ["id", "descripcion", "objeto"];
+      }
+      if (this.tabla == "sys_screens") {
+        tmpCampos = ["id", "titulo as descripcion", "objeto"];
+      }
+      
+      // Rellenar las listas
+      this.tiposCampo = this.funciones.tiposCampo;
+      await this.ListaDeEntidadesDatos("L");
+      await this.ListaDeEntidadesDatos("I");
+
+      this.crud2Campos.forEach((campo: { campo: string; lista: any[]; }) => {
+
+        // Asignar las listas
+        if (this.tipo == "C" || this.tipo == "T") {
+          if (campo.campo == "nformato") {
+            campo.lista = this.tiposCampo;
+          }
+          if (campo.campo == "nlistaval") {
+            campo.lista = this.lListasVal;
+          }
+          if (campo.campo == "nselectable") {
+            campo.lista = this.lSelectables;
+          }
+        } 
+
+      })
       
       await this.dataaccess.read(this.tabla, "", "id = '" + this.id + "'", tmpCampos,
         async (respuesta:any, datos: any) => {
@@ -82,30 +138,47 @@ export class Crud2ValoresComponent implements OnInit {
 
           // Guardo el registro completo para el SAVE
           this.registroCompleto = datos[0];
+          this.objetoCompleto = JSON.parse(this.registroCompleto.objeto.replace(/&quot;/g, '"').replace(/\t/g, '').replace(/\n/g, ''));  
+
+          if(this.global.DEBUG)
+            console.log("this.objetoCompleto", this.objetoCompleto);
 
           if (!this.nuevo) {
 
-            let tmpObjeto = JSON.parse(this.registroCompleto.objeto.replace(/&quot;/g, '"').replace(/\t/g, '').replace(/\n/g, ''));  //JSON.parse(datos[0].objeto);
             let aValor: any;
 
             switch (this.tipo) {
               case 'L': {
-                aValor = tmpObjeto.oLista.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                aValor = this.objetoCompleto.oLista.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
                 break;
               }
               case 'T': {
-                aValor = tmpObjeto.oTabla.oCampos.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                aValor = this.objetoCompleto.oTabla.oCampos.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
                 break;
               }
               case 'Q': {
-                aValor = tmpObjeto.oQuery.oFiltros.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                aValor = this.objetoCompleto.oQuery.oFiltros.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
                 break;
-              }                
+              }      
+              case 'G': {
+                aValor = this.objetoCompleto.oTablaGestiones.Columnas.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                break;
+              }  
+              case 'C': {
+                aValor = this.objetoCompleto.oCRUD01.Campos.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                break;
+              }    
+              case 'R': {
+                aValor = this.objetoCompleto.oListado.Columnas.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                break;
+              }                   
             }
-
-            this.crud2Campos.forEach((campo: { campo: string | number; }) => {
+          
+            this.crud2Campos.forEach((campo: { lista: any; campo: string | number; }) => {
               this.crud2Form.controls[campo.campo].patchValue(aValor[0][campo.campo]);
             })
+
+            this.ponerValorEnListas();
 
           }
 
@@ -148,7 +221,9 @@ export class Crud2ValoresComponent implements OnInit {
       this.showspinner.updateShowSpinner(true);
 
       // Recomponer el campo Objeto para actualizarlo
-      let tmpObjeto = JSON.parse(this.registroCompleto.objeto);
+      console.log(this.registroCompleto);
+
+      let tmpObjeto = this.objetoCompleto;    //JSON.parse(this.registroCompleto.objeto);
 
       if (this.nuevo) {
 
@@ -206,6 +281,67 @@ export class Crud2ValoresComponent implements OnInit {
             break;
           }
 
+          case 'G': {
+
+            let tmpColumnas: any[] = [];
+            if (tmpObjeto.oTablaGestiones.Columnas) {
+              tmpColumnas = tmpObjeto.oTablaGestiones.Columnas;
+            }
+
+            tmpColumnas.push({
+              id: this.funciones.generarUUID(""),
+              titulo: this.crud2Form.controls['titulo'].value,
+              campo: this.crud2Form.controls['campo'].value,
+              ordenar: this.crud2Form.controls['ordenar'].value,
+            })
+            tmpObjeto.oTablaGestiones.Columnas = tmpColumnas;
+            break;
+          }
+          case 'C': {
+
+            let tmpCampos: any[] = [];
+            
+            console.log("VALORES:", this.registroCompleto, this.objetoCompleto);
+
+            if (this.objetoCompleto.oCRUD01.Campos) {
+              tmpCampos = tmpObjeto.oCRUD01.Campos;
+            }
+
+            tmpCampos.push({
+              id: this.funciones.generarUUID(""),
+              etiqueta: this.crud2Form.controls['etiqueta'].value,
+              campo: this.crud2Form.controls['campo'].value,
+              formato: this.crud2Form.controls['formato'].value,
+              valdefault: this.crud2Form.controls['valdefault'].value,
+              enabledinicial: this.crud2Form.controls['enabledinicial'].value,
+              requerido: this.crud2Form.controls['requerido'].value,
+              ancho: this.crud2Form.controls['ancho'].value,
+              decimales: this.crud2Form.controls['decimales'].value,
+              listaval: this.crud2Form.controls['listaval'].value,
+              selectable: this.crud2Form.controls['selectable'].value,
+            })
+            tmpObjeto.oCRUD01.Campos = tmpCampos;
+            break;
+          }
+          case 'R': {
+
+            let tmpCampos: any[] = [];
+            
+            console.log("VALORES:", this.registroCompleto, this.objetoCompleto);
+
+            if (this.objetoCompleto.oListado.Columnas) {
+              tmpCampos = tmpObjeto.oListado.Columnas;
+            }
+
+            tmpCampos.push({
+              id: this.funciones.generarUUID(""),
+              titulo: this.crud2Form.controls['titulo'].value,
+              campo: this.crud2Form.controls['campo'].value,
+              ancho: this.crud2Form.controls['ancho'].value,
+            })
+            tmpObjeto.oListado.Columnas = tmpCampos;
+            break;
+          }
         }  // Fin del switch TIPO
 
 
@@ -264,6 +400,54 @@ export class Crud2ValoresComponent implements OnInit {
             })
             break;
           } 
+          case 'G': {
+          
+            tmpObjeto.oTablaGestiones.Columnas.forEach((dato: { id: string; titulo: any; campo: any; ordenar: boolean; }) => {
+              
+              if (dato.id == this.idvalor) {
+
+                dato.titulo = this.crud2Form.controls['titulo'].value;
+                dato.campo = this.crud2Form.controls['campo'].value;
+                dato.ordenar = this.crud2Form.controls['ordenar'].value;
+                
+              }
+
+            })
+            break;
+          } 
+          case 'C': {
+          
+            tmpObjeto.oCRUD01.Campos.forEach((dato: { id: string; etiqueta: any; campo: any; formato: any; valdefault: any; enabledinicial: any; requerido: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+              
+              if (dato.id == this.idvalor) {
+                dato.etiqueta = this.crud2Form.controls['etiqueta'].value;
+                dato.campo = this.crud2Form.controls['campo'].value;
+                dato.formato = this.crud2Form.controls['formato'].value;
+                dato.valdefault = this.crud2Form.controls['valdefault'].value;
+                dato.enabledinicial = this.crud2Form.controls['enabledinicial'].value;
+                dato.requerido = this.crud2Form.controls['requerido'].value;
+                dato.ancho = this.crud2Form.controls['ancho'].value;
+                dato.decimales = this.crud2Form.controls['decimales'].value;
+                dato.listaval = this.crud2Form.controls['listaval'].value;
+                dato.selectable = this.crud2Form.controls['selectable'].value;
+              }
+
+            })
+            break;
+          }
+          case 'R': {
+          
+            tmpObjeto.oListado.Columnas.forEach((dato: { id: string; titulo: any; campo: any; ancho: any; }) => {
+              
+              if (dato.id == this.idvalor) {
+                dato.titulo = this.crud2Form.controls['titulo'].value;
+                dato.campo = this.crud2Form.controls['campo'].value;
+                dato.ancho = this.crud2Form.controls['ancho'].value;
+              }
+
+            })
+            break;
+          }
         }  // Fin del switch TIPO
 
       }
@@ -304,27 +488,36 @@ export class Crud2ValoresComponent implements OnInit {
     let filter = value.toLowerCase();
     return this.tiposCampo.filter(opcion => opcion.texto.toLowerCase().startsWith(filter));
   }
-  cambiarValores(item: string) {
+  ajustarEnabled(pCampo: string, item: string) {
 
-    // Solo cuando es el campo de una tabla
-    if (this.tipo == 'T') {
+    // Solo cuando es el campo formato
+    if (this.tipo == "T" || this.tipo == "C") {
 
-      let ancho, decimales, valdefault: boolean = false;
+      let x: any[] = [];
+      x = this.tiposCampo.filter(t => t.texto == item);
+
+      let ancho, decimales, valdefault, lisvalores, selectable: boolean = false;
       let vvaldefault: string = "";
       let vancho: number = 0;
 
-      switch (item) {
-        case 'C': {
+      switch (x[0].codigo) {
+        case 'C':
+        case 'E':
+        case 'F': {
           ancho = true;
           decimales = false;
           valdefault = true;
+          lisvalores = false;
+          selectable = false;
           break;
         }
         case 'N':
         case 'M': {
           ancho = true;
           decimales = true;
-          valdefault = true;          
+          valdefault = true;
+          lisvalores = false;
+          selectable = false;
           break;
         }
         case 'K': {
@@ -332,24 +525,32 @@ export class Crud2ValoresComponent implements OnInit {
           vancho = 10;
           decimales = false;
           valdefault = true;
+          lisvalores = false;
+          selectable = false;
           break;
         }
         case 'D': {
           ancho = false;
           decimales = false;
           valdefault = true;
+          lisvalores = false;
+          selectable = false;
           break;
         }
         case 'T': {
           ancho = false;
           decimales = false;
           valdefault = true;
+          lisvalores = false;
+          selectable = false;
           break;
         }
         case 'H': {
           ancho = false;
           decimales = false;
           valdefault = true;
+          lisvalores = false;
+          selectable = false;
           break;
         }
         case 'A': {
@@ -357,6 +558,8 @@ export class Crud2ValoresComponent implements OnInit {
           vancho = 65535;
           decimales = false;
           valdefault = false;
+          lisvalores = false;
+          selectable = false;
           break;
         }
         case 'S': {
@@ -364,42 +567,281 @@ export class Crud2ValoresComponent implements OnInit {
           decimales = false;
           valdefault = false;
           vvaldefault = "CURRENT_TIMESTAMP";
+          lisvalores = false;
+          selectable = false;
+          break;
+        }
+        case 'L': {
+          ancho = false;
+          decimales = false;
+          valdefault = true;
+          vvaldefault = "";
+          lisvalores = true;
+          selectable = false;
+          break;
+        }
+        case 'I': {
+          ancho = false;
+          decimales = false;
+          valdefault = true;
+          vvaldefault = "";
+          lisvalores = false;
+          selectable = true;
           break;
         }
       }
 
-      // Ajustar ANCHO
-      if (ancho) {
-        this.crud2Form.controls["ancho"].enable();
-      } else {
-        this.crud2Form.controls["ancho"].disable();
-        this.crud2Form.controls["ancho"].patchValue(0);
+      if (this.tipo == "T") {
+        // Ajustar ANCHO
+        if (ancho) {
+          this.crud2Form.controls["ancho"].enable();
+        } else {
+          this.crud2Form.controls["ancho"].disable();
+          this.crud2Form.controls["ancho"].patchValue(0);
+        }
+        if (vancho != 0) {
+          this.crud2Form.controls["ancho"].patchValue(vancho);
+        }  // Si no lo deja igual
+        
+        // Ajustar DECIMALES
+        if (decimales) {
+          this.crud2Form.controls["decimales"].enable();
+        } else {
+          this.crud2Form.controls["decimales"].disable();
+          this.crud2Form.controls["decimales"].patchValue(0);
+        }
+
+        // Ajustar DEFECTO
+        if (valdefault) {
+          this.crud2Form.controls["default"].enable();
+          if (vvaldefault != "") {
+            this.crud2Form.controls["default"].patchValue(vvaldefault);
+          }  // Si no lo deja igual
+        } else {
+          this.crud2Form.controls["default"].disable();
+          this.crud2Form.controls["default"].patchValue(vvaldefault);
+        }
+
+
       }
-      if (vancho != 0) {
-        this.crud2Form.controls["ancho"].patchValue(vancho);
-      }  // Si no lo deja igual
-      
-      // Ajustar DECIMALES
-      if (decimales) {
-        this.crud2Form.controls["decimales"].enable();
-      } else {
-        this.crud2Form.controls["decimales"].disable();
-        this.crud2Form.controls["decimales"].patchValue(0);
+      if (this.tipo == "C") {
+        // Ajustar ANCHO
+        if (ancho == true) {
+          this.crud2Form.controls["ancho"].enable();
+        } else {
+          this.crud2Form.controls["ancho"].disable();
+          this.crud2Form.controls["ancho"].patchValue(0);
+        }
+        if (vancho != 0) {
+          this.crud2Form.controls["ancho"].patchValue(vancho);
+        }  // Si no lo deja igual
+        
+        // Ajustar DECIMALES
+        if (decimales == true) {
+          this.crud2Form.controls["decimales"].enable();
+        } else {
+          this.crud2Form.controls["decimales"].disable();
+          this.crud2Form.controls["decimales"].patchValue(0);
+        }
+
+        // Ajustar DEFECTO
+        if (valdefault) {
+          this.crud2Form.controls["valdefault"].enable();
+          if (vvaldefault != "") {
+            this.crud2Form.controls["valdefault"].patchValue(vvaldefault);
+          }  // Si no lo deja igual
+        } else {
+          this.crud2Form.controls["valdefault"].disable();
+          this.crud2Form.controls["valdefault"].patchValue(vvaldefault);
+        }
+
+        // Ajustar la lista de valores
+        if (lisvalores == true) {
+          // this.crud2Form.controls["valdefault"].patchValue("");
+          this.crud2Form.controls["nlistaval"].enable();
+        } else {
+          this.crud2Form.controls["nlistaval"].patchValue("");
+          this.crud2Form.controls["nlistaval"].disable();
+        }
+
+        // Ajustar la lista seleccionable
+        if (selectable == true) {
+          // this.crud2Form.controls["valdefault"].patchValue("");
+          this.crud2Form.controls["nselectable"].enable();
+        } else {
+          this.crud2Form.controls["nselectable"].patchValue("");
+          this.crud2Form.controls["nselectable"].disable();
+        }
       }
 
-      // Ajustar DEFECTO
-      if (valdefault) {
-        this.crud2Form.controls["default"].enable();
-        if (vvaldefault != "") {
-          this.crud2Form.controls["default"].patchValue(vvaldefault);
-        }  // Si no lo deja igual
-      } else {
-        this.crud2Form.controls["default"].disable();
-        this.crud2Form.controls["default"].patchValue(vvaldefault);
-      }
- 
     }
 
   }
 
+  // ////////////////// RECUPERAR LA LISTA DE LAS TABLAS DEFINIDAS ///////////////////////////////////////////////////
+  async ListaDeEntidadesDatos(pTipo: string) {
+
+    // PONER SPINNER
+    this.showspinner.updateShowSpinner(true);
+
+    await this.dataaccess.read("sys_modelo_datos", "", "tipo = '" + pTipo + "'", ["id", "descripcion"],
+    async (respuesta: any, datos: any) => {
+  
+      if (respuesta == 'OK') {
+
+        if (this.global.DEBUG)
+          console.log(pTipo + " recuperadas:", datos);
+      
+        if (pTipo == "L") {
+          this.lListasVal.push({
+            codigo: '',
+            texto: ''
+          })
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lListasVal.push({
+              codigo: q.id,
+              texto: q.descripcion
+            })
+          });          
+        } else if (pTipo == "I") {
+          this.lSelectables.push({
+            codigo: '',
+            texto: ''
+          })
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lSelectables.push({
+              codigo: q.id,
+              texto: q.descripcion
+            })
+          });          
+        } else {
+          this.lEntDatos.push({
+            codigo: '',
+            texto: ''
+          })
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lEntDatos.push({
+              codigo: q.id,
+              texto: q.descripcion
+            })
+          });
+        }
+
+        // QUITAR SPINNER
+        this.showspinner.updateShowSpinner(false);
+
+      } else {
+        // QUITAR SPINNER
+        this.showspinner.updateShowSpinner(false);
+      }
+    
+    })
+    
+  }
+  
+  // ////////////////// PONER LOS VALORES DEL REGISTRO EN LAS LISTAS DESPLEGABLES ///////////////////////////////////
+  ponerValorEnListas() {
+
+    if (this.tipo == "C") {   // CRUD01
+
+      this.objetoCompleto.oCRUD01.Campos.forEach((c: { id: string; formato: any; listaval: any; selectable: any; }) => {
+
+        if (c.id == this.idvalor) {
+
+          let tmp: any;
+          // Tipo de campo según el Formato
+          tmp = this.tiposCampo.filter(valor => valor.codigo == c.formato);
+          if (tmp.length > 0) {
+            this.crud2Form.controls["nformato"].patchValue(tmp[0].texto);
+
+            this.ajustarEnabled("nformato", tmp[0].texto);
+
+          } else {
+            this.crud2Form.controls["nformato"].patchValue("");
+          }
+          // Lista de valores
+          tmp = this.lListasVal.filter(valor => valor.codigo == c.listaval);
+          if (tmp.length > 0) {
+            this.crud2Form.controls["nlistaval"].patchValue(tmp[0].texto);
+          } else {
+            this.crud2Form.controls["nlistaval"].patchValue("");
+          }
+          // Lista selectables
+          tmp = this.lSelectables.filter(valor => valor.codigo == c.selectable);
+          if (tmp.length > 0) {
+            this.crud2Form.controls["nselectable"].patchValue(tmp[0].texto);
+          } else {
+            this.crud2Form.controls["nselectable"].patchValue("");
+          }
+        }
+
+      })
+
+    }
+    if (this.tipo == "T") {   // CRUD01
+
+      console.log("OBJETO COMPLETO", this.objetoCompleto);
+
+      this.objetoCompleto.oTabla.oCampos.forEach((c: { id: string; tipo: any; }) => {
+
+        if (c.id == this.idvalor) {
+
+          let tmp: any;
+          // Tipo de campo según el Formato
+          tmp = this.tiposCampo.filter(valor => valor.codigo == c.tipo);
+          if (tmp.length > 0) {
+
+            this.crud2Form.controls["nformato"].patchValue(tmp[0].texto);
+
+            this.ajustarEnabled("nformato", tmp[0].texto);
+
+          } else {
+            this.crud2Form.controls["nformato"].patchValue("");
+          }
+
+        }
+
+      })
+
+    }
+  }
+
+  // ////////////////// COMPLETAR EL CAMPO IDQUERY SEGUN LA LISTA SELECCIONABLE //////////////////////////////////////
+  ponerIds(pCampo: string, evento: any) {
+
+    let valor = evento.value;
+    let lq: any[] = [];
+
+    if (this.tipo == "C") {
+      switch (pCampo) {
+        case 'nformato': {
+          lq = this.tiposCampo.filter(q => q.texto == valor);
+          this.crud2Form.controls["formato"].patchValue(lq[0].codigo);
+          this.ajustarEnabled(pCampo, valor);
+          break;
+        }
+        case 'nlistaval': {
+          lq = this.lListasVal.filter(q => q.texto == valor);
+          this.crud2Form.controls["listaval"].patchValue(lq[0].codigo);
+          break;
+        }
+        case 'nselectable': {
+          lq = this.lSelectables.filter(q => q.texto == valor);
+          this.crud2Form.controls["selectable"].patchValue(lq[0].codigo);
+          break;
+        }
+          
+      }
+    }
+    if (this.tipo == "T") {
+      if (pCampo == 'nformato') {
+        lq = this.tiposCampo.filter(q => q.texto == valor);
+        this.crud2Form.controls["tipo"].patchValue(lq[0].codigo);
+        this.ajustarEnabled(pCampo, valor);
+      }
+
+    }
+
+  }
+  
 }

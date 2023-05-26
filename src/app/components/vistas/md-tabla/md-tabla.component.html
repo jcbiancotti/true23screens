@@ -4,12 +4,15 @@
 
   <mat-card-content>
 
-      <app-crud1-convalores
-          id = "{{id}}"
-          tipo = "T"
-          rutaCrud2 = "{{rutaCrud2}}"
-          rutaRetorno = "{{rutaRetorno}}"
-      ></app-crud1-convalores>
+    <app-crud1-convalores
+      id = "{{id}}"
+      tipo = "T"
+      rutaCrud2 = "{{rutaCrud2}}"
+      rutaRetorno = "{{rutaRetorno}}"
+      [campos] = "camposCrud1"
+      [colTitulos] = "columnasValores"
+      tabla = "{{tabla}}"
+    ></app-crud1-convalores>
 
   </mat-card-content>
 

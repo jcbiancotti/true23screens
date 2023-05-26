@@ -42,7 +42,8 @@ export class InComponent implements OnInit {
     // Recuperar opciones del menu
     const xopciones = await this.dataaccess.opcionesMenu_Servicio();
 
-    console.log("Definición del menu:", xopciones);
+    if(this.global.DEBUG)
+      console.log("Definición del menu:", xopciones);
 
     this.opciones = xopciones;  ///.data;
                

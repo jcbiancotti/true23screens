@@ -4,58 +4,74 @@
 <!-- FORMULARIO -->
 <form [formGroup]="crud1Form">
     
-    <mat-grid-list cols="1" rowHeight="90px">
+  <mat-grid-list cols="1" rowHeight="2rem">
 
-      <!-- ENCABEZADO Y BOTONES -->
-      <mat-grid-tile>
-          <div class="submenuCRUD">
-              <div>
-                  <button mat-button (click)="back()" style="color: gray;"><mat-icon>arrow_back</mat-icon> Volver</button>
-              </div>
-              <div class="spacer"></div>
-              <div>
-                  <button color="primary" mat-raised-button (click)="save()" [disabled]="!crud1Form.valid" title="Grabar los cambios"><mat-icon>save_outline</mat-icon> Grabar</button>
-                  <button color="accent" mat-raised-button (click)="reset()" title="Descartar los cambios y recargar el registro"><mat-icon>refresh</mat-icon> Descartar</button>
-                  <button color="warn" mat-raised-button (click)="delete()" *ngIf="!nuevo" title="Eliminar este registro"><mat-icon>delete_outline</mat-icon> Eliminar</button>
-              </div>
+    <!-- ENCABEZADO Y BOTONES -->
+    <mat-grid-tile [rowspan]="3">
+        <div class="submenuCRUD">
+            <div>
+                <button mat-button (click)="back()" style="color: gray;"><mat-icon>arrow_back</mat-icon> Volver</button>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <button color="primary" mat-raised-button (click)="save()" [disabled]="!crud1Form.valid" title="Grabar los cambios"><mat-icon>save_outline</mat-icon> Grabar</button>
+                <button color="accent" mat-raised-button (click)="reset()" title="Descartar los cambios y recargar el registro"><mat-icon>refresh</mat-icon> Descartar</button>
+                <button color="warn" mat-raised-button (click)="delete()" *ngIf="!nuevo" title="Eliminar este registro"><mat-icon>delete_outline</mat-icon> Eliminar</button>
+            </div>
+        </div>
+    </mat-grid-tile>
+
+    <div *ngFor="let field of campos; index as f">
+      
+      <mat-grid-tile *ngIf="field.formato != 'B' && field.visible" class="form-row" [rowspan]="3">
+      
+        <mat-form-field *ngIf="field.formato != 'B'" [class]="{'custom-mat-form-field' : field.formato != 'A', 'custom-textarea-mat-form-field' : field.formato == 'A'}" appearance="outline">
+
+          <mat-label>{{field.etiqueta}}</mat-label>
+
+          <!-- INPUT (texto) -->
+          <input *ngIf="field.formato == 'C'" type="textbox" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
+
+          <!-- INPUT (Numeros) -->
+          <input *ngIf="field.formato == 'N'" type="number" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
+
+          <!-- AREA DE TEXTO -->
+          <textarea *ngIf="field.formato=='A'" class="custom-textarea" rows="3" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"></textarea>
+
+          <!-- LISTA -->
+          <div *ngIf="field.formato == 'T'">
+            <!-- TABLAS / SE PERMITE ESCRIBIR -->
+            <input type="textbox" formControlName="{{field.campo}}" matInput (keyup)="onKey(field.campo, $event)" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="poneIdQuery(field.campo, $event)">
+              <mat-option *ngFor="let opc of opc_Lista" [value]="opc.nombre">
+                  {{opc.nombre}}
+              </mat-option>
+            </mat-autocomplete>
           </div>
+          <!-- LISTA -->
+          <div *ngIf="field.formato == 'L'">
+            <!-- LISTAS / NO SE PERMITE ESCRIBIR -->
+            <mat-select formControlName="{{field.campo}}" (selectionChange)="poneIdQuery(field.campo, $event)">
+              <mat-option *ngFor="let opc of field.lista" [value]="opc.nombre">
+                  {{opc.nombre}}
+              </mat-option>
+            </mat-select>
+          </div>
+          <mat-error *ngIf="field.formato != 'B' && crud1Form.controls[field.campo].hasError('required')">Este dato es obligatorio!</mat-error>
+          <mat-error *ngIf="field.formato != 'B' && crud1Form.controls[field.campo].hasError('maxlength')">Este dato no puede exceder de {{field.ancho}} caracteres!</mat-error>
+          <mat-error *ngIf="field.formato != 'B' && crud1Form.controls[field.campo].hasError('email')">El correo electrónico no tiene un formato correcto!</mat-error>
+
+        </mat-form-field>
       </mat-grid-tile>
 
-      <div *ngFor="let field of campos; index as f">
-        
-        <mat-grid-tile *ngIf="field.visible" class="form-row">
-        
-          <mat-form-field [class]="{'custom-mat-form-field' : field.formato != 'A', 'custom-textarea-mat-form-field' : field.formato == 'A'}" appearance="outline">
+      <!-- CHECKBOXES -->
+      <mat-grid-tile *ngIf="field.formato == 'B' && field.visible" [rowspan]="1">
+        <div class="form-checkbox">
+          <mat-checkbox color="primary" formControlName="{{field.campo}}">{{field.etiqueta}}</mat-checkbox>
+        </div>
+      </mat-grid-tile>
 
-              <mat-label>{{field.etiqueta}}</mat-label>
-
-              <!-- INPUT (texto) -->
-              <input *ngIf="field.campo != 'tabla' && field.formato == 'C'" type="textbox" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
-
-              <!-- INPUT (Numeros) -->
-              <input *ngIf="field.campo != 'tabla' && field.formato == 'N'" type="number" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"> 
-
-              <!-- AREA DE TEXTO -->
-              <textarea *ngIf="field.campo!='tabla' && field.formato=='A'" class="custom-textarea" rows="3" formControlName="{{field.campo}}" matInput maxlength="{{field.ancho}}"></textarea>
-
-              <!-- LISTA DE TABLAS DE LA BBDD -->
-              <div *ngIf="field.campo == 'tabla'">
-                <input type="textbox" formControlName="{{field.campo}}" matInput (keyup)="onKey($event)" [matAutocomplete]="auto" (change)="pErrores = []; showDiferencias = false;">
-                <mat-autocomplete #auto="matAutocomplete">
-                  <mat-option *ngFor="let tbl of opc_tablasBBDD" [value]="tbl.table_name">
-                      {{tbl.table_name}}
-                  </mat-option>
-                </mat-autocomplete>
-              </div>
-
-              <mat-error *ngIf="crud1Form.controls[field.campo].hasError('required')">Este dato es obligatorio!</mat-error>
-              <mat-error *ngIf="crud1Form.controls[field.campo].hasError('maxlength')">Este dato no puede exceder de {{field.ancho}} caracteres!</mat-error>
-              <mat-error *ngIf="crud1Form.controls[field.campo].hasError('email')">El correo electrónico no tiene un formato correcto!</mat-error>
-
-          </mat-form-field>
-
-        </mat-grid-tile>
-      </div>
+    </div>
 
   </mat-grid-list>
 
@@ -111,7 +127,7 @@
                       <mat-icon *ngIf="err.add2table" class="inline-icon" style="color: green" title="Crear el campo en la tabla" (click)="add2table(err.id)">post_add</mat-icon>
                       <mat-icon *ngIf="err.add2table" class="inline-icon" style="color: red" title="Eliminar el campo de la definición" (click)="del2definicion(err.id)">delete_outline</mat-icon>
 
-                      <!-- EL CAMPO TIENE DIFERENCIAS ENGTRE LA DEFINICION Y LA TABLA -->
+                      <!-- EL CAMPO TIENE DIFERENCIAS ENTRE LA DEFINICION Y LA TABLA -->
                       <mat-icon *ngIf="
                         err.diferencias != 0 && 
                         err.objeto.campo.nombre != 'clave' &&

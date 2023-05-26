@@ -1,1 +1,21 @@
-<p>scr-listado works!</p>
+<div class="true-page">
+
+  <mat-card-title><h1>Definici&oacute;n del listado</h1></mat-card-title>
+
+  <mat-card-content>
+
+    <app-crud1-convalores
+        id = "{{id}}"
+        tipo = "R"
+        rutaCrud2 = "{{rutaCrud2}}"
+        rutaRetorno = "{{rutaRetorno}}"
+        [campos] = "camposCrud1"
+        [colTitulos] = "columnasValores"
+        tabla = "{{tabla}}"
+    ></app-crud1-convalores>
+
+  
+  </mat-card-content>
+
+</div>
+

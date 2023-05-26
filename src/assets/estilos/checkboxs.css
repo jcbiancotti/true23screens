@@ -1,3 +1,9 @@
 .true_check {
   color: black;
 }
+
+mat-grid-tile .form-checkbox {
+  width: 80%;
+  max-width: 460px;
+  text-align: left;
+}
