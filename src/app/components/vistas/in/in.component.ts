@@ -65,7 +65,7 @@ export class InComponent implements OnInit {
   }
 
   go(opcion: any) {
-
+ 
     let ruta = opcion.ruta;
 
     let idopcion = '';

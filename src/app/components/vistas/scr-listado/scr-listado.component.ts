@@ -98,7 +98,7 @@ export class ScrListadoComponent implements OnInit {
         formato: "L",
         disable: false,
         visible: true,
-        lista: "this.lEntDatos"
+        lista: "this.lQueries"
       },
       {
         id: this.funciones.generarUUID(""),

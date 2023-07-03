@@ -44,19 +44,23 @@ export class ButtonlistComponent implements OnInit {
       if (respuesta == 'OK') {
 
         if (this.global.DEBUG)
-          console.log("Registro recuperado addQuery:", datos[1]);
+          console.log("Registro recuperado cargaAddQuery:", datos[1]);
         
         let tmp: any[] = [];
         this.localLista = [];
 
-        tmp = datos[1].filter((d: { id: any; }) => (this.opciones.filter((op: { id: any; }) => op.id == d.id)).length == 0)
+        if (this.opciones.length > 0) {
+          tmp = datos[1].filter((d: { id: any; }) => (this.opciones.filter((op: { id: any; }) => op.id == d.id)).length == 0)
+        } else {
+          tmp = datos[1];
+        }
 
         tmp.forEach((reg: any) => {
 
-            this.localLista.push({
-              id: reg.id,
-              texto: reg.descripcion
-            })
+          this.localLista.push({
+            id: reg.id,
+            texto: reg.descripcion
+          })
 
         })
 

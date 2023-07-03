@@ -23,7 +23,7 @@
 
     <div *ngFor="let field of campos; index as f">
       
-      <mat-grid-tile *ngIf="field.formato != 'B' && field.visible" class="form-row" [rowspan]="3">
+      <mat-grid-tile *ngIf="field.formato != 'B' && field.visible == true" class="form-row" [rowspan]="3">
       
         <mat-form-field *ngIf="field.formato != 'B'" [class]="{'custom-mat-form-field' : field.formato != 'A', 'custom-textarea-mat-form-field' : field.formato == 'A'}" appearance="outline">
 

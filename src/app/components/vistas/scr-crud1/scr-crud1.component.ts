@@ -122,6 +122,12 @@ export class ScrCrud1Component implements OnInit {
         campo: "campo"
       },
       {
+        literal: "Orden",
+        ordenar: true,
+        orden: false,
+        campo: "orden"
+      },
+      {
         literal: "Formato",
         ordenar: true,
         orden: false,
@@ -168,6 +174,12 @@ export class ScrCrud1Component implements OnInit {
         ordenar: true,
         orden: false,
         campo: "nselectable"
+      },
+      {
+        literal: "ButtonList Query",
+        ordenar: true,
+        orden: false,
+        campo: "nBSquery"
       }
     ];
 

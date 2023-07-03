@@ -1,0 +1,5 @@
+Header Set Access-Control-Allow-Origin * 
+Header Set Access-Control-Allow-Headers *
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]

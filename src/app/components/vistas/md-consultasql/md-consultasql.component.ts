@@ -62,7 +62,7 @@ export class MdConsultasqlComponent implements OnInit {
         requerido: true,
         etiqueta: "Cadena SQL",
         valordefault: "",
-        ancho: 2000,
+        ancho: 5000,
         formato: "A",
         disable: false,
         visible: true

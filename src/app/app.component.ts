@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { isLoggedFlagService, spinnerstatus } from './servicios/global.service';
+import { GlobalService, isLoggedFlagService, spinnerstatus } from './servicios/global.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -7,14 +8,16 @@ import { isLoggedFlagService, spinnerstatus } from './servicios/global.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'true23screens';
+  title = 'ServicesApplications';
 
   isLogged: boolean = false;
   showspinner: boolean = false;
 
-   constructor(
+  constructor(
+    private global: GlobalService,
     private misLoggedFlagService: isLoggedFlagService,
-    private switchspinner: spinnerstatus,  
+    private switchspinner: spinnerstatus, 
+    private http: HttpClient,
   ) 
   {
     this.misLoggedFlagService.misLogged$.subscribe(isLogged => {
@@ -26,6 +29,16 @@ export class AppComponent {
         
   }
   
-  ngOnInit(): void { }
+  ngOnInit(): void { 
+    this.readFileContent();
+  }
+
+  readFileContent() {
+    this.http.get('./assets/entorno.txt', { responseType: 'text' })
+      .subscribe((data: string) => {
+        console.log("ENTORNO:", data); 
+        this.global.setVariablesGlobales(data);
+      });
+  }
 
 }

@@ -93,6 +93,17 @@ export class OrqOpcionmenuComponent implements OnInit {
       },
       {
         id: this.funciones.generarUUID(""),
+        campo: "orden",
+        requerido: false,
+        etiqueta: "Orden en el menú",
+        valordefault: "",
+        ancho: 3,
+        formato: "C",
+        disable: false,
+        visible: true
+      },
+      {
+        id: this.funciones.generarUUID(""),
         campo: "roles",
         requerido: false,
         etiqueta: "Opción disponible en los siguientes roles de usuario",

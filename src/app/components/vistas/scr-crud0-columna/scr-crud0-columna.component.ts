@@ -68,7 +68,7 @@ export class ScrCrud0ColumnaComponent implements OnInit {
           id: "ordenar",
           etiqueta: "Ordenable",
           campo: "ordenar",
-          requerido: true,
+          requerido: false,
           valordefault: '',
           visible: true,
           disabled: false,

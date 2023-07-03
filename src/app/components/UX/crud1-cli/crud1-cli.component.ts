@@ -50,6 +50,9 @@ export class Crud1CliComponent implements OnInit {
           await this.cargarRegistro();
       } else {
         await this.recuperarDatosCrud1();
+        // Cargar las listas y asignar el valor recuperado
+        await this.CargarValoresLista();
+
       } 
   
     }
@@ -86,7 +89,12 @@ export class Crud1CliComponent implements OnInit {
             }
 
             if (campo.formato == "J") {
-              xValor = JSON.parse(datos[0][campo.campo].replace(/&quot;/g, '"').replace(/\t/g, '').replace(/\n/g, ''));
+              let tmp = JSON.parse(datos[0][campo.campo].replace(/&quot;/g, '"').replace(/\t/g, '').replace(/\n/g, ''));
+              if (tmp == "") {
+                xValor = [];
+              } else {
+                xValor = tmp;
+              }
               xValor.addQuery = campo.addQuery;
             }
 
@@ -337,7 +345,10 @@ export class Crud1CliComponent implements OnInit {
     // ////////////////// CUANDO SE HACE AÑADE UN JITEM ////////////////////////////////////////////////////////////////
     agregarJitem(campo: string, item: any) {
       
-      let nuevoValor = this.crud1Form.controls[campo].value;
+      let nuevoValor = [];
+      if (this.crud1Form.controls[campo].value != "") {
+        nuevoValor = this.crud1Form.controls[campo].value;
+      };
       nuevoValor.push({
         id: item.id,
         descripcion: item.descripcion
@@ -393,7 +404,6 @@ export class Crud1CliComponent implements OnInit {
             this.crud1Form.controls[pCampo.campo].patchValue(txt);
                   
           }
-
           
         })
         // QUITAR SPINNER
@@ -402,8 +412,6 @@ export class Crud1CliComponent implements OnInit {
       })
     
     }
-
-    
   
   } // Fin del Export general
   

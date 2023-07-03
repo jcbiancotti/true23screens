@@ -8,15 +8,10 @@ import { Component, OnInit } from '@angular/core';
 })
 export class IndesktopComponent implements OnInit {
 
-
-  constructor() { }
+  constructor(
+  ) { }
 
   ngOnInit(): void {
-
   }
-
-
-
-
 
 }

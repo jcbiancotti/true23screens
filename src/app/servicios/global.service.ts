@@ -65,18 +65,32 @@ export class GlobalService {
     private av_female: avartar_female,
   ) { }
 
+  API_ROUTE: string = "";
+  DEBUG: boolean = true;
+  
   //// PRODUCCION ////
-  // API_ROUTE = "https://biancotti.es/Backend22/";
+  // API_ROUTE = "https://www.biancotti.es/Backend22/";
   // DEBUG = false;
   
   //// DESARROLLO ////
-  API_ROUTE = "/backend/";
-  DEBUG = true;
+  // API_ROUTE = "/backend/";
+  // DEBUG = true;
 
   avatar_female = this.av_female.avatar_female;
-
   txtLopd = "TRUE Software España, en adelante TrueSoft, con domicilio en Alcalá de Henares, Madrid (España), es titular de este sitio Web, y responsable de los datos de carácter personal suministrados por los usuarios a través de este sitio Web. El usuario queda informado sobre el tratamiento de los datos suministrados durante la navegación en la página Web y los que se generen como consecuencia de la utilización de la misma, incluidas, en su caso, las comunicaciones o las transferencias internacionales de los datos que pudieran realizarse, con las finalidades indicadas en el apartado ¿Con qué finalidad utilizamos tus datos personales? En caso de que los datos facilitados se refieran a terceras personas físicas distintas del usuario, éste garantiza haber recabado y contar con el consentimiento previo de los mismos para la comunicación de sus datos y haberles informado, con carácter previo a facilitarlos, de las finalidades del tratamiento, comunicaciones y demás términos previstos en el apartado Información sobre Protección de Datos. El usuario declara que es mayor de 14 años. Si los datos facilitados durante la navegación son de menores de 18 años, incluidos los datos de salud, como titular de la patria potestad o tutela sobre el menor, autoriza expresamente el tratamiento de los mismos en los términos establecidos en la información adicional. El usuario garantiza la exactitud y veracidad de los datos facilitados, adquiriendo el compromiso de comunicar a TrueSoft cualquier cambio en los mismos. La utilización de esta web está sujeta a la Política de Privacidad y Tratamiento de Datos Personales, a las Condiciones de Uso que se detallan a continuación, así como a la Política de Cookies. Te rogamos que las leas atentamente.";
   
+  setVariablesGlobales(entorno: string) {
+
+    if (entorno == "P") {
+      this.API_ROUTE = "https://www.biancotti.es/Backend22/";
+      this.DEBUG = false;
+    } else {
+      this.API_ROUTE = "/backend/";
+      this.DEBUG = true;
+    }
+     
+  }
+
   mensaje(pTitulo: string, pMensaje: string, pCategoria: string, pOk: string, pCancelar: string) {
 
     // PARA LLAMARLO
@@ -131,6 +145,8 @@ export class Funciones {
     { codigo: "S", texto: "Timestamp" },
     { codigo: "L", texto: "Lista de valores" },
     { codigo: "I", texto: "Lista seleccionable" },
+    { codigo: "B", texto: "Button List" },
+    { codigo: "P", texto: "Imagen/Avatar" },
 
   ];
   

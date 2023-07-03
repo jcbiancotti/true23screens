@@ -51,6 +51,7 @@ export class Crud1ConvaloresComponent implements OnInit {
   lEntDatos: any[] = [];        // Entidades de datos definidas en sys_modelo_datos
   lListasVal: any[] = [];       // Entidades de datos definidas en sys_modelo_datos
   lSelectables: any[] = [];     // Entidades de datos definidas en sys_modelo_datos
+  lQueries: any[] = [];     // Entidades de datos definidas en sys_modelo_datos
   lOrientaciones: any[] = [{ id: "V", nombre: "Vertical" }, { id: "L", nombre: "Apaisada" }];
 
   opc_Lista: any[] = [];
@@ -158,12 +159,15 @@ export class Crud1ConvaloresComponent implements OnInit {
             this.crud1Form.controls["pantallaAdd"].patchValue(this.objetoCompleto.oTablaGestiones.PantallaAdd);
             this.crud1Form.controls["pantallaEdit"].patchValue(this.objetoCompleto.oTablaGestiones.PantallaEdit);
             this.crud1Form.controls["pantallaList"].patchValue(this.objetoCompleto.oTablaGestiones.PantallaList);
+            this.crud1Form.controls["rutaAdd"].patchValue(this.objetoCompleto.oTablaGestiones.rutaAdd);
+            this.crud1Form.controls["rutaEdit"].patchValue(this.objetoCompleto.oTablaGestiones.rutaEdit);
             break;
           }
           case 'C': {
 
             await this.ListaDeEntidadesDatos("L");
             await this.ListaDeEntidadesDatos("I");
+            await this.ListaDeEntidadesDatos("Q");
             
             this.crud1Form.controls["descripcion"].patchValue(datos[0]['descripcion']);
             this.crud1Form.controls["titulo"].patchValue(this.objetoCompleto.oDisenio.titulo);
@@ -261,7 +265,7 @@ export class Crud1ConvaloresComponent implements OnInit {
         /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
         this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));
         this.crud1Form.addControl(this.campos[1].campo, new FormControl("", [Validators.required, Validators.maxLength(100)]));
-        this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(2000)]));
+        this.crud1Form.addControl(this.campos[2].campo, new FormControl("", [Validators.required, Validators.maxLength(5000)]));
         break;
       }
       // Definiciones de pantallas
@@ -270,10 +274,10 @@ export class Crud1ConvaloresComponent implements OnInit {
         this.tools = false;
         this.label_agregar = "Agregar columna";
 
-        this.campos[5].lista = this.lEntDatos;
-        this.campos[10].lista = this.lPantallas;
-        this.campos[12].lista = this.lPantallas;
+        this.campos[5].lista = this.lQueries;
+        this.campos[11].lista = this.lPantallas;
         this.campos[14].lista = this.lPantallas;
+        this.campos[16].lista = this.lPantallas;
 
         /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
         this.crud1Form.addControl(this.campos[0].campo, new FormControl(this.campos[0].id, [Validators.maxLength(13)]));         // id
@@ -285,12 +289,14 @@ export class Crud1ConvaloresComponent implements OnInit {
         this.crud1Form.addControl(this.campos[6].campo, new FormControl("", [Validators.maxLength(1)]));                         // rowAgregar
         this.crud1Form.addControl(this.campos[7].campo, new FormControl("", [Validators.maxLength(1)]));                         // rowEditar
         this.crud1Form.addControl(this.campos[8].campo, new FormControl("", [Validators.maxLength(1)]));                         // rowListar
-        this.crud1Form.addControl(this.campos[9].campo, new FormControl("", [Validators.maxLength(13)]));                        // pantallaAdd
-        this.crud1Form.addControl(this.campos[10].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaAdd
-        this.crud1Form.addControl(this.campos[11].campo, new FormControl("", [Validators.maxLength(13)]));                       // pantallaEdit
-        this.crud1Form.addControl(this.campos[12].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaEdit
-        this.crud1Form.addControl(this.campos[13].campo, new FormControl("", [Validators.maxLength(13)]));                       // pantallaList
-        this.crud1Form.addControl(this.campos[14].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaList
+        this.crud1Form.addControl(this.campos[9].campo, new FormControl("", [Validators.maxLength(50)]));                        // rutaAdd
+        this.crud1Form.addControl(this.campos[10].campo, new FormControl("", [Validators.maxLength(13)]));                       // pantallaAdd
+        this.crud1Form.addControl(this.campos[11].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaAdd
+        this.crud1Form.addControl(this.campos[12].campo, new FormControl("", [Validators.maxLength(50)]));                       // rutaEdit
+        this.crud1Form.addControl(this.campos[13].campo, new FormControl("", [Validators.maxLength(13)]));                       // pantallaEdit
+        this.crud1Form.addControl(this.campos[14].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaEdit
+        this.crud1Form.addControl(this.campos[15].campo, new FormControl("", [Validators.maxLength(13)]));                       // pantallaList
+        this.crud1Form.addControl(this.campos[16].campo, new FormControl("", [Validators.maxLength(200)]));                      // npantallaList
         break;
 
       }
@@ -319,7 +325,7 @@ export class Crud1ConvaloresComponent implements OnInit {
         this.tools = false;
         this.label_agregar = "Agregar columna";
 
-        this.campos[5].lista = this.lEntDatos;
+        this.campos[5].lista = this.lQueries;
         this.campos[7].lista = this.lOrientaciones;
 
         /////// DEFINICION DE LOS CAMPOS PARA EL FORMULARIO ////////
@@ -587,10 +593,10 @@ export class Crud1ConvaloresComponent implements OnInit {
         let tmpColumnas: any[] = [];
 
         if (this.objetoCompleto && this.objetoCompleto.oTablaGestiones && this.objetoCompleto.oTablaGestiones.Columnas) {
-          this.objetoCompleto.oTablaGestiones.Columnas.forEach((reg: { id: any; nombre: any; campo: any; ordenar: any; }) => {
+          this.objetoCompleto.oTablaGestiones.Columnas.forEach((reg: { id: any; titulo: any; campo: any; ordenar: any; }) => {
             tmpColumnas.push({
               id: reg.id,
-              titulo: reg.nombre,
+              titulo: reg.titulo,
               campo: reg.campo,
               ordenar: reg.ordenar
             });
@@ -608,7 +614,9 @@ export class Crud1ConvaloresComponent implements OnInit {
           Row_Listar: this.crud1Form.controls['rowListar'].value,
           PantallaAdd: this.crud1Form.controls['pantallaAdd'].value,
           PantallaEdit: this.crud1Form.controls['pantallaEdit'].value,
-          PantallaList: this.crud1Form.controls['pantallaList'].value
+          PantallaList: this.crud1Form.controls['pantallaList'].value,
+          rutaAdd: this.crud1Form.controls['rutaAdd'].value,
+          rutaEdit: this.crud1Form.controls['rutaEdit'].value
         }
         break;
       }
@@ -617,11 +625,12 @@ export class Crud1ConvaloresComponent implements OnInit {
         let tmpCampos: any[] = [];
 
         if (this.objetoCompleto && this.objetoCompleto.oCRUD01 && this.objetoCompleto.oCRUD01.Campos) {
-          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { id: any; etiqueta: any; campo: any; formato: any; requerido: boolean; valdefault: any; enabledinicial: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { id: any; etiqueta: any; campo: any; orden: any; formato: any; requerido: boolean; valdefault: any; enabledinicial: any; ancho: any; decimales: any; listaval: any; selectable: any; BSquery: any; }) => {
             tmpCampos.push({
               id: reg.id,
               etiqueta: reg.etiqueta,
               campo: reg.campo,
+              orden: reg.orden,
               formato: reg.formato,
               valdefault: reg.valdefault,
               enabledinicial: reg.enabledinicial,
@@ -629,7 +638,8 @@ export class Crud1ConvaloresComponent implements OnInit {
               ancho: reg.ancho,
               decimales: reg.decimales,
               listaval: reg.listaval,
-              selectable: reg.selectable
+              selectable: reg.selectable,
+              BSquery: reg.BSquery
             });
           })
         }
@@ -648,10 +658,10 @@ export class Crud1ConvaloresComponent implements OnInit {
         let tmpColumnas: any[] = [];
 
         if (this.objetoCompleto && this.objetoCompleto.oListado && this.objetoCompleto.oListado.Columnas) {
-          this.objetoCompleto.oListado.Columnas.forEach((reg: { id: any; nombre: any; campo: any; ancho: any; }) => {
+          this.objetoCompleto.oListado.Columnas.forEach((reg: { id: any; titulo: any; campo: any; ancho: any; }) => {
             tmpColumnas.push({
               id: reg.id,
-              titulo: reg.nombre,
+              titulo: reg.titulo,
               campo: reg.campo,
               ancho: reg.ancho
             });
@@ -947,7 +957,7 @@ export class Crud1ConvaloresComponent implements OnInit {
 
         if (this.objetoCompleto.oCRUD01.Campos) {
 
-          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { requerido: any; id: any; etiqueta: any; campo: any; formato: any; valdefault: any; enabledinicial: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { requerido: any; id: any; etiqueta: any; campo: any; orden: any; formato: any; valdefault: any; enabledinicial: any; ancho: any; decimales: any; listaval: any; selectable: any; BSquery: any; }) => {
 
             let xReq = "No";
             if (reg.requerido == true) {
@@ -974,10 +984,18 @@ export class Crud1ConvaloresComponent implements OnInit {
               xnSelectable = unaSelectable[0].nombre; 
             }
 
+            let unaBSquery = this.lQueries.filter((BSq: { id: string; }) => BSq.id.startsWith(reg.BSquery));
+            let xnBSquery = "";
+
+            if (unaBSquery.length > 0) {
+              xnBSquery = unaBSquery[0].nombre; 
+            }
+
             this.registros.push({
               id: reg.id,
               etiqueta: reg.etiqueta,
               campo: reg.campo,
+              orden: reg.orden,
               formato: reg.formato,
               nformato: unTipo[0].texto,
               valdefault: reg.valdefault,
@@ -988,7 +1006,9 @@ export class Crud1ConvaloresComponent implements OnInit {
               listaval: reg.listaval,
               nlistaval: xnListaval,
               selectable: reg.selectable,
-              nselectable: xnSelectable
+              nselectable: xnSelectable,
+              BSquery: reg.BSquery,
+              nBSquery: xnBSquery
             })
 
           });
@@ -1271,7 +1291,7 @@ export class Crud1ConvaloresComponent implements OnInit {
         let tmpCampos: any[] = [];
 
         if (this.objetoCompleto && this.objetoCompleto.oCRUD01 && this.objetoCompleto.oCRUD01.Campos) {
-          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { id: any; etiqueta: any; campo: any; formato: any; valdefault: any; enabledinicial: any; requerido: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+          this.objetoCompleto.oCRUD01.Campos.forEach((reg: { id: any; etiqueta: any; campo: any; formato: any; valdefault: any; enabledinicial: any; requerido: any; ancho: any; decimales: any; listaval: any; selectable: any; BSquery: any}) => {
             tmpCampos.push({
               id: reg.id,
               etiqueta: reg.etiqueta,
@@ -1283,7 +1303,8 @@ export class Crud1ConvaloresComponent implements OnInit {
               ancho: reg.ancho,
               decimales: reg.decimales,
               listaval: reg.listaval,
-              selectable: reg.selectable
+              selectable: reg.selectable,
+              BSquery: reg.BSquery
             });
           })
         }
@@ -1526,6 +1547,9 @@ export class Crud1ConvaloresComponent implements OnInit {
                 xancho = campo.cancho;
               } else if (campo.tipo == "text") {
                 xtipo = "A";
+                xancho = campo.cancho;
+              } else if (campo.tipo == "longtext") {
+                xtipo = "P";
                 xancho = campo.cancho;
               }
 
@@ -2466,7 +2490,15 @@ export class Crud1ConvaloresComponent implements OnInit {
             xcampodef += " DEFAULT '" + elError[0].objeto.default + "'";
           }
         }
-        
+        if (elError[0].objeto.tipo == 'P') {
+          xcampodef += "longtext";
+          if (elError[0].objeto.default != "") {
+            xcampodef += " NULL '";
+          }
+        }
+        if (elError[0].objeto.tipo == 'B') {
+          xcampodef += "text NULL";
+        }
         // Cadena para agregar el campo (ALTER TABLE `pruebas1` ADD COLUMN `nuevacol` VARCHAR(45) NULL DEFAULT 'XX';
         cadena = "ALTER TABLE `" + pTabla + "` ADD COLUMN `";
 
@@ -2648,7 +2680,9 @@ export class Crud1ConvaloresComponent implements OnInit {
             xcampodef += " DEFAULT '" + elError[0].objeto.defCampo.default + "'";
           }
         }
-        
+        if (elError[0].objeto.defCampo.tipo == 'P') {
+          xcampodef += "longtext NULL";
+        }
         // // Cadena para agregar el campo (ALTER TABLE `pruebas1` ADD COLUMN `nuevacol` VARCHAR(45) NULL DEFAULT 'XX';
         // cadena = "ALTER TABLE `" + pTabla + "` ADD COLUMN `";
 
@@ -2766,6 +2800,9 @@ export class Crud1ConvaloresComponent implements OnInit {
         } else if (elError[0].objeto.campo.tipo == "text") {
           xtipo = "A";
           xancho = elError[0].objeto.campo.cancho;
+        } else if (elError[0].objeto.campo.tipo == "longtext") {
+          xtipo = "P";
+          xancho = elError[0].objeto.campo.cancho;
         }
 
         let elId = elError[0].objeto.defCampo.id;
@@ -2861,7 +2898,7 @@ export class Crud1ConvaloresComponent implements OnInit {
 
     switch (pCampo) {
       case 'nQuery': {
-        let lq = this.lEntDatos.filter(q => q.nombre == valor);
+        let lq = this.lQueries.filter(q => q.nombre == valor);
         this.laQ.id = lq[0].id;
         this.laQ.nombre = lq[0].nombre;
 
@@ -3005,12 +3042,23 @@ export class Crud1ConvaloresComponent implements OnInit {
             })
           });          
         } else if (pTipo == "I") {
+          this.lSelectables.push({
+            id: '',
+            nombre: ''
+          })
           datos.forEach((q: { id: string; descripcion: string; }) => {
             this.lSelectables.push({
-              id: '',
-              nombre: ''
+              id: q.id,
+              nombre: q.descripcion
             })
-            this.lSelectables.push({
+          });          
+        } else if (pTipo == "Q") {
+          this.lQueries.push({
+            id: '',
+            nombre: ''
+          })
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lQueries.push({
               id: q.id,
               nombre: q.descripcion
             })
@@ -3067,7 +3115,7 @@ export class Crud1ConvaloresComponent implements OnInit {
             }
           }
           if (this.tipo == "R") {
-            let lq = this.lEntDatos.filter(q => q.id == this.objetoCompleto.oListado.idQuery);
+            let lq = this.lQueries.filter(q => q.id == this.objetoCompleto.oListado.idQuery);
             if (lq.length > 0) {
               this.laQ.id = lq[0].id;
               this.laQ.nombre = lq[0].nombre;

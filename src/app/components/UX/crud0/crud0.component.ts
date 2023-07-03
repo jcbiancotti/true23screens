@@ -228,8 +228,6 @@ export class Crud0Component implements OnInit  {
 
     if(this.global.DEBUG)
       console.log("Ir a (CRUD1)(Vacío = nuevo)", pId);
-
-    
     
     if(pId && pId != '' && pId != null) {
       // Editar un registro existente
@@ -266,22 +264,6 @@ export class Crud0Component implements OnInit  {
         if (this.global.DEBUG)
           console.log("Documento en Base64:", titulo); //, datos);
         
-        // PREVISUALIZAR PERO AL DESCARGAR NO PONE EL NOMBRE DEL DOCUMENTO
-        // var objbuilder = '';
-        // objbuilder += ('<object width="100%" height="100%" data="data:application/pdf;base64,');
-        // objbuilder += (datos64);
-        // objbuilder += ('" type="application/pdf" class="internal" download="filename.pdf">');
-        // objbuilder += ('<embed src="data:application/pdf;base64,');
-        // objbuilder += (datos64);
-        // objbuilder += ('" type="application/pdf" download="filename.pdf"/>');
-        // objbuilder += ('</object>');
-
-        // var win = window.open("#","_blank");
-        // win!.document.write('<html><title>' + titulo + '</title>');
-        // win!.document.write('<body style = "margin-top:0px; margin-left: 0px; margin-right: 0px; margin-bottom: 0px;" > ');
-        // win!.document.write(objbuilder);
-        // win!.document.write('</body></html>');
-
         // Descarga directamente el PDF 
         const blob = this.funciones.base64toBlob(datos64, "application/pdf")
         const urlBlob = URL.createObjectURL(blob);

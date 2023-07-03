@@ -136,6 +136,17 @@ export class ScrCrud0Component implements OnInit {
       },
       {
         id: this.funciones.generarUUID(""),
+        campo: "rutaAdd",
+        requerido: false,
+        etiqueta: "Ruta para agregar ( Router /...)",
+        valordefault: "",
+        ancho: 50,
+        formato: "C",
+        disable: false,
+        visible: true
+      },
+      {
+        id: this.funciones.generarUUID(""),
         campo: "pantallaAdd",
         requerido: false,
         etiqueta: "Pantalla de agregar",
@@ -156,6 +167,17 @@ export class ScrCrud0Component implements OnInit {
         disable: false,
         visible: true,
         lista: "this.lPantallas"
+      },
+      {
+        id: this.funciones.generarUUID(""),
+        campo: "rutaEdit",
+        requerido: false,
+        etiqueta: "Ruta para editar ( Router /...)",
+        valordefault: "",
+        ancho: 50,
+        formato: "C",
+        disable: false,
+        visible: true
       },
       {
         id: this.funciones.generarUUID(""),
@@ -184,7 +206,7 @@ export class ScrCrud0Component implements OnInit {
         id: this.funciones.generarUUID(""),
         campo: "pantallaList",
         requerido: false,
-        etiqueta: "Pantalla de listado",
+        etiqueta: "Definición del listado",
         valordefault: "",
         ancho: 13,
         formato: "C",

@@ -28,6 +28,7 @@ export class Crud2ValoresComponent implements OnInit {
   lEntDatos: any[] = [];           // Entidades de datos definidas en sys_modelo_datos
   lListasVal: any[] = [];          // Entidades de datos definidas en sys_modelo_datos
   lSelectables: any[] = [];        // Entidades de datos definidas en sys_modelo_datos
+  lQueries: any[] = [];            // Entidades de datos definidas en sys_modelo_datos
   opc_Lista: any[] = [];
   laQ: any = { id: "", nombre: "" };
   laP: any = { id: "", nombre: "" };
@@ -82,13 +83,20 @@ export class Crud2ValoresComponent implements OnInit {
         if (campo.campo == "nselectable") {
           campo.lista = this.lSelectables;
         }
+        if (campo.campo == "nBSquery") {
+          campo.lista = this.lQueries;
+        }
       } 
       if (this.tipo == "T") {
         if (campo.campo == "nformato") {
           campo.lista = this.tiposCampo;
         }
       } 
-
+      if (this.tipo == "Q") {
+        if (campo.campo == "nformato") {
+          campo.lista = this.tiposCampo;
+        }
+      } 
     })
     
     await this.recuperarRegistroValor();
@@ -112,11 +120,12 @@ export class Crud2ValoresComponent implements OnInit {
       this.tiposCampo = this.funciones.tiposCampo;
       await this.ListaDeEntidadesDatos("L");
       await this.ListaDeEntidadesDatos("I");
+      await this.ListaDeEntidadesDatos("Q");
 
       this.crud2Campos.forEach((campo: { campo: string; lista: any[]; }) => {
 
         // Asignar las listas
-        if (this.tipo == "C" || this.tipo == "T") {
+        if (this.tipo == "C" || this.tipo == "T" || this.tipo == "Q") {
           if (campo.campo == "nformato") {
             campo.lista = this.tiposCampo;
           }
@@ -125,6 +134,9 @@ export class Crud2ValoresComponent implements OnInit {
           }
           if (campo.campo == "nselectable") {
             campo.lista = this.lSelectables;
+          }
+          if (campo.campo == "nBSquery") {
+            campo.lista = this.lQueries;
           }
         } 
 
@@ -301,7 +313,8 @@ export class Crud2ValoresComponent implements OnInit {
 
             let tmpCampos: any[] = [];
             
-            console.log("VALORES:", this.registroCompleto, this.objetoCompleto);
+            if(this.global.DEBUG)
+              console.log("VALORES:", this.registroCompleto, this.objetoCompleto);
 
             if (this.objetoCompleto.oCRUD01.Campos) {
               tmpCampos = tmpObjeto.oCRUD01.Campos;
@@ -311,6 +324,7 @@ export class Crud2ValoresComponent implements OnInit {
               id: this.funciones.generarUUID(""),
               etiqueta: this.crud2Form.controls['etiqueta'].value,
               campo: this.crud2Form.controls['campo'].value,
+              orden: this.crud2Form.controls['orden'].value,
               formato: this.crud2Form.controls['formato'].value,
               valdefault: this.crud2Form.controls['valdefault'].value,
               enabledinicial: this.crud2Form.controls['enabledinicial'].value,
@@ -319,6 +333,7 @@ export class Crud2ValoresComponent implements OnInit {
               decimales: this.crud2Form.controls['decimales'].value,
               listaval: this.crud2Form.controls['listaval'].value,
               selectable: this.crud2Form.controls['selectable'].value,
+              seleBSquery: this.crud2Form.controls['BSquery'].value
             })
             tmpObjeto.oCRUD01.Campos = tmpCampos;
             break;
@@ -417,11 +432,12 @@ export class Crud2ValoresComponent implements OnInit {
           } 
           case 'C': {
           
-            tmpObjeto.oCRUD01.Campos.forEach((dato: { id: string; etiqueta: any; campo: any; formato: any; valdefault: any; enabledinicial: any; requerido: any; ancho: any; decimales: any; listaval: any; selectable: any; }) => {
+            tmpObjeto.oCRUD01.Campos.forEach((dato: { id: string; etiqueta: any; campo: any; orden: any; formato: any; valdefault: any; enabledinicial: any; requerido: any; ancho: any; decimales: any; listaval: any; selectable: any; BSquery: any}) => {
               
               if (dato.id == this.idvalor) {
                 dato.etiqueta = this.crud2Form.controls['etiqueta'].value;
                 dato.campo = this.crud2Form.controls['campo'].value;
+                dato.orden = this.crud2Form.controls['orden'].value;
                 dato.formato = this.crud2Form.controls['formato'].value;
                 dato.valdefault = this.crud2Form.controls['valdefault'].value;
                 dato.enabledinicial = this.crud2Form.controls['enabledinicial'].value;
@@ -430,6 +446,7 @@ export class Crud2ValoresComponent implements OnInit {
                 dato.decimales = this.crud2Form.controls['decimales'].value;
                 dato.listaval = this.crud2Form.controls['listaval'].value;
                 dato.selectable = this.crud2Form.controls['selectable'].value;
+                dato.BSquery = this.crud2Form.controls['BSquery'].value;
               }
 
             })
@@ -496,7 +513,7 @@ export class Crud2ValoresComponent implements OnInit {
       let x: any[] = [];
       x = this.tiposCampo.filter(t => t.texto == item);
 
-      let ancho, decimales, valdefault, lisvalores, selectable: boolean = false;
+      let ancho, decimales, valdefault, lisvalores, selectable, BSquery: boolean = false;
       let vvaldefault: string = "";
       let vancho: number = 0;
 
@@ -509,6 +526,7 @@ export class Crud2ValoresComponent implements OnInit {
           valdefault = true;
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'N':
@@ -518,6 +536,7 @@ export class Crud2ValoresComponent implements OnInit {
           valdefault = true;
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'K': {
@@ -527,6 +546,7 @@ export class Crud2ValoresComponent implements OnInit {
           valdefault = true;
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'D': {
@@ -535,6 +555,7 @@ export class Crud2ValoresComponent implements OnInit {
           valdefault = true;
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'T': {
@@ -543,6 +564,7 @@ export class Crud2ValoresComponent implements OnInit {
           valdefault = true;
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'H': {
@@ -551,6 +573,7 @@ export class Crud2ValoresComponent implements OnInit {
           valdefault = true;
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'A': {
@@ -560,6 +583,7 @@ export class Crud2ValoresComponent implements OnInit {
           valdefault = false;
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'S': {
@@ -569,24 +593,51 @@ export class Crud2ValoresComponent implements OnInit {
           vvaldefault = "CURRENT_TIMESTAMP";
           lisvalores = false;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'L': {
           ancho = false;
+          vancho = 100;
           decimales = false;
           valdefault = true;
           vvaldefault = "";
           lisvalores = true;
           selectable = false;
+          BSquery = false;
           break;
         }
         case 'I': {
           ancho = false;
+          vancho = 100;
           decimales = false;
           valdefault = true;
           vvaldefault = "";
           lisvalores = false;
           selectable = true;
+          BSquery = false;
+          break;
+        }
+        case 'P': {
+          ancho = false;
+          vancho = 4294967295;
+          decimales = false;
+          valdefault = true;
+          vvaldefault = "";
+          lisvalores = false;
+          selectable = true;
+          BSquery = false;
+          break;
+        }  
+        case 'B': {
+          ancho = false;
+          vancho = 150;
+          decimales = false;
+          valdefault = true;
+          vvaldefault = "";
+          lisvalores = false;
+          selectable = false;
+          BSquery = true;
           break;
         }
       }
@@ -657,7 +708,6 @@ export class Crud2ValoresComponent implements OnInit {
 
         // Ajustar la lista de valores
         if (lisvalores == true) {
-          // this.crud2Form.controls["valdefault"].patchValue("");
           this.crud2Form.controls["nlistaval"].enable();
         } else {
           this.crud2Form.controls["nlistaval"].patchValue("");
@@ -666,11 +716,18 @@ export class Crud2ValoresComponent implements OnInit {
 
         // Ajustar la lista seleccionable
         if (selectable == true) {
-          // this.crud2Form.controls["valdefault"].patchValue("");
           this.crud2Form.controls["nselectable"].enable();
         } else {
           this.crud2Form.controls["nselectable"].patchValue("");
           this.crud2Form.controls["nselectable"].disable();
+        }
+
+        // Ajustar la lista de BSquery
+        if (BSquery == true) {
+          this.crud2Form.controls["nBSquery"].enable();
+        } else {
+          this.crud2Form.controls["nBSquery"].patchValue("");
+          this.crud2Form.controls["nBSquery"].disable();
         }
       }
 
@@ -714,6 +771,17 @@ export class Crud2ValoresComponent implements OnInit {
               texto: q.descripcion
             })
           });          
+        } else if (pTipo == "Q") {
+          this.lQueries.push({
+            codigo: '',
+            texto: ''
+          })
+          datos.forEach((q: { id: string; descripcion: string; }) => {
+            this.lQueries.push({
+              codigo: q.id,
+              texto: q.descripcion
+            })
+          });          
         } else {
           this.lEntDatos.push({
             codigo: '',
@@ -744,7 +812,7 @@ export class Crud2ValoresComponent implements OnInit {
 
     if (this.tipo == "C") {   // CRUD01
 
-      this.objetoCompleto.oCRUD01.Campos.forEach((c: { id: string; formato: any; listaval: any; selectable: any; }) => {
+      this.objetoCompleto.oCRUD01.Campos.forEach((c: { id: string; formato: any; listaval: any; selectable: any; BSquery: any }) => {
 
         if (c.id == this.idvalor) {
 
@@ -773,16 +841,49 @@ export class Crud2ValoresComponent implements OnInit {
           } else {
             this.crud2Form.controls["nselectable"].patchValue("");
           }
+          // Lista de Queries
+          tmp = this.lQueries.filter(valor => valor.codigo == c.BSquery);
+          if (tmp.length > 0) {
+            this.crud2Form.controls["nBSquery"].patchValue(tmp[0].texto);
+          } else {
+            this.crud2Form.controls["nBSquery"].patchValue("");
+          }
         }
 
       })
 
     }
-    if (this.tipo == "T") {   // CRUD01
+    if (this.tipo == "T") {   // TABLA
 
       console.log("OBJETO COMPLETO", this.objetoCompleto);
 
       this.objetoCompleto.oTabla.oCampos.forEach((c: { id: string; tipo: any; }) => {
+
+        if (c.id == this.idvalor) {
+
+          let tmp: any;
+          // Tipo de campo según el Formato
+          tmp = this.tiposCampo.filter(valor => valor.codigo == c.tipo);
+          if (tmp.length > 0) {
+
+            this.crud2Form.controls["nformato"].patchValue(tmp[0].texto);
+
+            this.ajustarEnabled("nformato", tmp[0].texto);
+
+          } else {
+            this.crud2Form.controls["nformato"].patchValue("");
+          }
+
+        }
+
+      })
+
+    }
+    if (this.tipo == "Q") {   // QUERY
+
+      console.log("OBJETO COMPLETO", this.objetoCompleto);
+
+      this.objetoCompleto.oQuery.oFiltros.forEach((c: { id: string; tipo: any; }) => {
 
         if (c.id == this.idvalor) {
 
@@ -830,7 +931,11 @@ export class Crud2ValoresComponent implements OnInit {
           this.crud2Form.controls["selectable"].patchValue(lq[0].codigo);
           break;
         }
-          
+        case 'nBSquery': {
+          lq = this.lQueries.filter(q => q.texto == valor);
+          this.crud2Form.controls["BSquery"].patchValue(lq[0].codigo);
+          break;
+        } 
       }
     }
     if (this.tipo == "T") {
@@ -839,9 +944,13 @@ export class Crud2ValoresComponent implements OnInit {
         this.crud2Form.controls["tipo"].patchValue(lq[0].codigo);
         this.ajustarEnabled(pCampo, valor);
       }
-
     }
-
+    if (this.tipo == "Q") {
+      if (pCampo == 'nformato') {
+        lq = this.tiposCampo.filter(q => q.texto == valor);
+        this.crud2Form.controls["tipo"].patchValue(lq[0].codigo);
+      }
+    }
   }
   
 }
