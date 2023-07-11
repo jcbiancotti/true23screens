@@ -64,9 +64,32 @@ export class MdConsultasqlComponent implements OnInit {
         valordefault: "",
         ancho: 5000,
         formato: "A",
-        disable: false,
+        disable: false, 
         visible: true
-      }
+      },
+      {
+        id: this.funciones.generarUUID(""),
+        campo: "idBuscador",
+        requerido: false,
+        etiqueta: "Buscador vinculado",
+        valordefault: "",
+        ancho: 13,
+        formato: "C",
+        disable: true,
+        visible: false
+      },
+      {
+        id: this.funciones.generarUUID(""),
+        campo: "nBuscador",
+        requerido: false,
+        etiqueta: "Buscador vinculado",
+        valordefault: "",
+        ancho: 200,
+        formato: "L",
+        disable: false,
+        visible: true,
+        lista: "this.lBuscadores"
+      },
     ];   
 
     // Las columnas de la tabla de valores

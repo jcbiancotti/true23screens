@@ -99,7 +99,7 @@ export class ScrCrud0Component implements OnInit {
         formato: "L",
         disable: false,
         visible: true,
-        lista: "this.lEntDatos"
+        lista: "this.lEntdatos"
       },
       {
         id: this.funciones.generarUUID(""),
@@ -128,6 +128,17 @@ export class ScrCrud0Component implements OnInit {
         campo: "rowListar",
         requerido: false,
         etiqueta: "Opción de Listado",
+        valordefault: "",
+        ancho: 10,
+        formato: "B",
+        disable: false,
+        visible: true
+      },
+      {
+        id: this.funciones.generarUUID(""),
+        campo: "rowBuscar",
+        requerido: false,
+        etiqueta: "Opción de Buscador",
         valordefault: "",
         ancho: 10,
         formato: "B",

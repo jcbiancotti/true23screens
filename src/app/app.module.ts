@@ -54,6 +54,8 @@ import { Crud1CliComponent } from './components/UX/crud1-cli/crud1-cli.component
 import { LopdComponent } from './components/vistas/lopd/lopd.component';
 import { ButtonlistComponent } from './components/UX/buttonlist/buttonlist.component';
 import { ScrListadoColumnaComponent } from './components/vistas/scr-listado-columna/scr-listado-columna.component';
+import { ScrBuscadoresComponent } from './components/vistas/scr-buscadores/scr-buscadores.component';
+import { ScrBuscadorCampoComponent } from './components/vistas/scr-buscador-campo/scr-buscador-campo.component';
 
 @NgModule({
   declarations: [
@@ -103,7 +105,9 @@ import { ScrListadoColumnaComponent } from './components/vistas/scr-listado-colu
     Crud1CliComponent,
     LopdComponent,
     ButtonlistComponent,
-    ScrListadoColumnaComponent
+    ScrListadoColumnaComponent,
+    ScrBuscadoresComponent,
+    ScrBuscadorCampoComponent
   ],
   imports: [
     MaterialModule,

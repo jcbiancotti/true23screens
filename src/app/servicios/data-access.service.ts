@@ -561,7 +561,7 @@ export class DataAccessService {
               },
               {
                 id: "35",
-                name: "Buscador (...)",
+                name: "Buscadores",
                 padre: "3",
                 pantalla: '',
                 pantalladef: '',

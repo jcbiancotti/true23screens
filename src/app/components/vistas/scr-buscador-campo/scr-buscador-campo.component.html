@@ -1,0 +1,20 @@
+<div class="true-page">
+
+  <mat-card-title><h1>Campo a incluir en el filtrado</h1></mat-card-title>
+
+  <mat-card-content>
+
+      <app-crud2-valores
+          id = "{{id}}"
+          idvalor = "{{idvalor}}"
+          tipo = "B"
+          tabla = "sys_screens"
+          [crud2Campos] = "crud2Campos"
+          rutaRetorno = "{{rutaRetorno}}"
+      ></app-crud2-valores>
+
+      <p>Recuerda incluir la letra correspondiente al Alias de la tabla correspondiente en la consulta SQL</p>
+
+  </mat-card-content>
+
+</div>

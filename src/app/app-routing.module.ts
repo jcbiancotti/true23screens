@@ -36,6 +36,8 @@ import { OrqRolComponent } from './components/vistas/orq-rol/orq-rol.component';
 import { OrqOpcionmenuComponent } from './components/vistas/orq-opcionmenu/orq-opcionmenu.component';
 import { LopdComponent } from './components/vistas/lopd/lopd.component';
 import { ScrListadoColumnaComponent } from './components/vistas/scr-listado-columna/scr-listado-columna.component';
+import { ScrBuscadoresComponent } from './components/vistas/scr-buscadores/scr-buscadores.component';
+import { ScrBuscadorCampoComponent } from './components/vistas/scr-buscador-campo/scr-buscador-campo.component';
 
 
 const routes: Routes = [
@@ -101,8 +103,13 @@ const routes: Routes = [
       { path: 'listadocolumna/:id', component: ScrListadoColumnaComponent, canActivate: [GuardInGuard]},  
       { path: 'listadocolumna/:id/:idvalor', component: ScrListadoColumnaComponent, canActivate: [GuardInGuard] }, 
           
+      { path: 'buscadores', component: ScrBuscadoresComponent, canActivate: [GuardInGuard]},  
+      { path: 'buscador', component: ScrBuscadorComponent, canActivate: [GuardInGuard]},  
+      { path: 'buscador/:id', component: ScrBuscadorComponent, canActivate: [GuardInGuard]},  
+      { path: 'buscadorcampo/:id', component: ScrBuscadorCampoComponent, canActivate: [GuardInGuard]},  
+      { path: 'buscadorcampo/:id/:idvalor', component: ScrBuscadorCampoComponent, canActivate: [GuardInGuard]},  
+
       { path: 'capturas', component: ScrCapturadatosComponent, canActivate: [GuardInGuard]},  
-      { path: 'buscadores', component: ScrBuscadorComponent, canActivate: [GuardInGuard]},  
       { path: 'selectores', component: ScrSelectorComponent, canActivate: [GuardInGuard]},  
 
     ]

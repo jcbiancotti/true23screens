@@ -183,7 +183,11 @@ export class Crud2ValoresComponent implements OnInit {
               case 'R': {
                 aValor = this.objetoCompleto.oListado.Columnas.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
                 break;
-              }                   
+              }   
+              case 'B': {
+                aValor = this.objetoCompleto.oBuscador.CamposFiltro.filter((valor: { id: string; }) => valor.id.startsWith(this.idvalor));
+                break;
+              }   
             }
           
             this.crud2Campos.forEach((campo: { lista: any; campo: string | number; }) => {
@@ -341,8 +345,6 @@ export class Crud2ValoresComponent implements OnInit {
           case 'R': {
 
             let tmpCampos: any[] = [];
-            
-            console.log("VALORES:", this.registroCompleto, this.objetoCompleto);
 
             if (this.objetoCompleto.oListado.Columnas) {
               tmpCampos = tmpObjeto.oListado.Columnas;
@@ -357,6 +359,22 @@ export class Crud2ValoresComponent implements OnInit {
             tmpObjeto.oListado.Columnas = tmpCampos;
             break;
           }
+          case 'B': {
+
+            let tmpCampos: any[] = [];
+
+            if (this.objetoCompleto.oBuscador.CamposFiltro) {
+              tmpCampos = tmpObjeto.oBuscador.CamposFiltro;
+            }
+
+            tmpCampos.push({
+              id: this.funciones.generarUUID(""),
+              campo: this.crud2Form.controls['campo'].value,
+            })
+            tmpObjeto.oBuscador.CamposFiltro = tmpCampos;
+            break;
+          }
+            
         }  // Fin del switch TIPO
 
 
@@ -460,6 +478,17 @@ export class Crud2ValoresComponent implements OnInit {
                 dato.titulo = this.crud2Form.controls['titulo'].value;
                 dato.campo = this.crud2Form.controls['campo'].value;
                 dato.ancho = this.crud2Form.controls['ancho'].value;
+              }
+
+            })
+            break;
+          }
+          case 'B': {
+          
+            tmpObjeto.oBuscador.CamposFiltro.forEach((dato: { id: string; campo: any; }) => {
+              
+              if (dato.id == this.idvalor) {
+                dato.campo = this.crud2Form.controls['campo'].value;
               }
 
             })
