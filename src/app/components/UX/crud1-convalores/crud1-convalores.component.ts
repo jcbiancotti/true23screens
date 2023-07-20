@@ -2213,7 +2213,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                 case 'E':
                       {
                   campoDef = "varchar(" + campo.ancho + ")";
-                  if (campo.default != "") {
+                  if (campo.default != "" && campo.default != null) {
                     campoDef += " DEFAULT '" + campo.default + "'";
                   } else {
                     campoDef += " DEFAULT NULL";
@@ -2223,7 +2223,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                 // //////////////// CAMPO TIPO NUMERICO
                 case 'N': {
                   campoDef = "decimal(" + campo.ancho + "," + campo.decimales + ")";
-                  if (campo.default != "") {
+                  if (campo.default != "" && campo.default != null) {
                     campoDef += " DEFAULT " + campo.default.replace(",",".") + "";
                   } else {
                     campoDef += " DEFAULT NULL";
@@ -2233,7 +2233,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                 // //////////////// CAMPO TIPO MONEDA  
                 case 'M': {
                   campoDef = "decimal(" + campo.ancho + "," + campo.decimales + ")";
-                  if (campo.default != "") {
+                  if (campo.default != "" && campo.default != null) {
                     campoDef += " DEFAULT " + campo.default.replace(",",".") + "";
                   } else {
                     campoDef += " DEFAULT NULL";
@@ -2243,7 +2243,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                 // //////////////// CAMPO TIPO SI/NO
                 case 'K': {
                   campoDef = "int(" + campo.ancho + ")";
-                  if (campo.default != "") {
+                  if (campo.default != "" && campo.default != null) {
                     if (campo.default == 'S') {
                       campoDef += " DEFAULT 1";
                     } else {
@@ -2257,7 +2257,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                 // //////////////// CAMPO TIPO FECHA
                 case 'D': {
                   campoDef = "date";
-                  if (campo.default != "") {
+                  if (campo.default != "" && campo.default != null) {
                     campoDef += " DEFAULT '" + campo.default.replaceAll("/","-") + "'";
                   } else {
                     campoDef += " DEFAULT NULL";
@@ -2267,7 +2267,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                 // //////////////// CAMPO TIPO FECHA Y HORA
                 case 'T': {
                   campoDef = "datetime";
-                  if (campo.default != "") {
+                  if (campo.default != "" && campo.default != null) {
                     campoDef += " DEFAULT '" + campo.default + "'";
                   } else {
                     campoDef += " DEFAULT NULL";
@@ -2277,7 +2277,7 @@ export class Crud1ConvaloresComponent implements OnInit {
                 // //////////////// CAMPO TIPO HORA
                 case 'H': {
                   campoDef = "time";
-                  if (campo.default != "") {
+                  if (campo.default != "" && campo.default != null) {
                     campoDef += " DEFAULT '" + campo.default + "'";
                   } else {
                     campoDef += " DEFAULT NULL";
